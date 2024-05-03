@@ -82,6 +82,7 @@ public class MindustryToolPlugin extends Plugin {
                     try {
                         apiGateway.handleMessage(line);
                     } catch (Exception ignored) {
+                        serverController.handleCommandString(line);
                     }
                 }
             } catch (IOException e) {
