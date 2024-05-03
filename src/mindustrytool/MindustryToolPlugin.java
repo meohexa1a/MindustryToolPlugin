@@ -1,86 +1,97 @@
 package mindustrytool;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 import arc.*;
 import arc.util.*;
-import mindustry.*;
-import mindustry.content.*;
-import mindustry.game.EventType.*;
-import mindustry.gen.*;
 import mindustry.mod.*;
-import mindustry.net.Administration.*;
-import mindustry.world.blocks.storage.*;
 
 public class MindustryToolPlugin extends Plugin {
 
+    private static final String SERVER_INPUT_FIELD = "serverInput";
+
+    public static final APIGateway apiGateway = new APIGateway();
+    public static final ServerController serverController = new ServerController();
+
     @Override
     public void init() {
+        removeDefaultServerControl();
+        addCustomServerControl();
 
-        Events.on(BuildSelectEvent.class, event -> {
-            if (!event.breaking && event.builder != null && event.builder.buildPlan() != null
-                    && event.builder.buildPlan().block == Blocks.thoriumReactor && event.builder.isPlayer()) {
+        List<String> data = new ArrayList<>();
 
-                Player player = event.builder.getPlayer();
-
-                Call.sendMessage("[scarlet]ALERT![] " + player.name + " has begun building a reactor at " + event.tile.x
-                        + ", " + event.tile.y);
-            }
+        apiGateway.handle("HELLO", data.getClass(), event -> {
+            event.response("Data");
         });
 
-        Vars.netServer.admins.addChatFilter((player, text) -> text.replace("heck", "h*ck"));
-
-        Vars.netServer.admins.addActionFilter(action -> {
-
-            if (action.type == ActionType.depositItem && action.item == Items.blastCompound
-                    && action.tile.block() instanceof CoreBlock) {
-                action.player.sendMessage(
-                        "Example action filter: Prevents players from depositing blast compound into the core.");
-                return false;
-            }
-            return true;
-        });
-
-        var listeners = Core.app.getListeners()
-                .filter(listener -> listener.getClass().getSimpleName().equals("ServerControl"));
-
-        listeners.forEach(listener -> {
-            Core.app.removeListener(listener);
-            Log.info(listener);
-        });
-
+        Core.app.addListener(serverController);
     }
 
     @Override
     public void registerServerCommands(CommandHandler handler) {
-        handler.register("reactors", "List all thorium reactors in the map.", args -> {
-            for (int x = 0; x < Vars.world.width(); x++) {
-                for (int y = 0; y < Vars.world.height(); y++) {
-
-                    if (Vars.world.tile(x, y).block() == Blocks.thoriumReactor && Vars.world.tile(x, y).isCenter()) {
-                        Log.info("Reactor at @, @", x, y);
-                    }
-                }
-            }
-        });
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
+    }
 
-        handler.<Player>register("reply", "<text...>", "A simple ping command that echoes a player's text.",
-                (args, player) -> {
-                    player.sendMessage("You said: [accent] " + args[0]);
+    private void removeDefaultServerControl() {
+        ApplicationListener serverControl = Core.app
+                .getListeners()
+                .find(listener -> listener.getClass()
+                        .getSimpleName()
+                        .startsWith("ServerControl"));
+
+        if (serverControl != null) {
+            try {
+
+                Class<?> clazz = serverControl.getClass();
+                Field field = clazz.getDeclaredField(SERVER_INPUT_FIELD);
+
+                field.setAccessible(true);
+                field.set(serverControl, null);
+
+            } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+                e.printStackTrace();
+            }
+            Core.app.removeListener(serverControl);
+            Log.info("Removed listener: " + serverControl.toString());
+
+        }
+
+        Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> thread.getName().equals("Server Controls"))
+                .forEach(thread -> {
+                    thread.interrupt();
+                    Log.info("Killed thread: " + thread.getName());
                 });
 
-        handler.<Player>register("whisper", "<player> <text...>", "Whisper text to another player.", (args, player) -> {
+    }
 
-            Player other = Groups.player.find(p -> p.name.equalsIgnoreCase(args[0]));
-
-            if (other == null) {
-                player.sendMessage("[scarlet]No player by that name found!");
-                return;
+    private void addCustomServerControl() {
+        Runnable inputReader = () -> {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String line;
+            try {
+                while ((line = reader.readLine()) != null) {
+                    try {
+                        apiGateway.handleMessage(line);
+                    } catch (Exception ignored) {
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        };
 
-            other.sendMessage("[lightgray](whisper) " + player.name + ":[] " + args[1]);
-        });
+        var inputThread = new Thread(inputReader, "InputThread");
+
+        inputThread.setDaemon(true);
+        inputThread.start();
     }
 }
