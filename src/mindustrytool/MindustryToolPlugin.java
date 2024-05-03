@@ -15,8 +15,6 @@ import mindustrytool.commands.ClientCommands;
 
 public class MindustryToolPlugin extends Plugin {
 
-    private static final String SERVER_INPUT_FIELD = "serverInput";
-
     public static final APIGateway apiGateway = new APIGateway();
     public static final ServerController serverController = new ServerController();
 
@@ -48,14 +46,18 @@ public class MindustryToolPlugin extends Plugin {
                 .getListeners()
                 .find(listener -> listener instanceof ServerControl);
 
+        String[] setNullFields = { "serverInput" };
+
         if (serverControl != null) {
             try {
 
-                Class<?> clazz = serverControl.getClass();
-                Field field = clazz.getDeclaredField(SERVER_INPUT_FIELD);
+                for (String fieldName : setNullFields) {
 
-                field.setAccessible(true);
-                field.set(serverControl, null);
+                    Field field = ServerControl.class.getDeclaredField(fieldName);
+
+                    field.setAccessible(true);
+                    field.set(serverControl, null);
+                }
 
             } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
                 e.printStackTrace();
