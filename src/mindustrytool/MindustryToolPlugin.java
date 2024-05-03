@@ -11,6 +11,7 @@ import arc.*;
 import arc.util.*;
 import mindustry.mod.*;
 import mindustry.server.ServerControl;
+import mindustrytool.commands.ClientCommands;
 
 public class MindustryToolPlugin extends Plugin {
 
@@ -39,6 +40,7 @@ public class MindustryToolPlugin extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
+        ClientCommands.registerCommands(handler);
     }
 
     private void removeDefaultServerControl() {

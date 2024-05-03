@@ -26,7 +26,7 @@ public class ServerController implements ApplicationListener {
 
     public static ServerController instance;
 
-    public static final CommandHandler handler = new CommandHandler("/");
+    public static final CommandHandler handler = new CommandHandler("");
     public static final VoteHandler voteHandler = new VoteHandler();
 
     public static volatile boolean autoPaused = false;
