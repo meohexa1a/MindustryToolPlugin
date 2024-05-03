@@ -10,6 +10,7 @@ import java.util.List;
 import arc.*;
 import arc.util.*;
 import mindustry.mod.*;
+import mindustry.server.ServerControl;
 
 public class MindustryToolPlugin extends Plugin {
 
@@ -43,9 +44,7 @@ public class MindustryToolPlugin extends Plugin {
     private void removeDefaultServerControl() {
         ApplicationListener serverControl = Core.app
                 .getListeners()
-                .find(listener -> listener.getClass()
-                        .getSimpleName()
-                        .startsWith("ServerControl"));
+                .find(listener -> listener instanceof ServerControl);
 
         if (serverControl != null) {
             try {

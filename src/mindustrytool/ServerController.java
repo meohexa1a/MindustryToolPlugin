@@ -16,7 +16,8 @@ import mindustry.maps.Maps.*;
 import mindustry.mod.Mods.*;
 import mindustry.net.Administration.*;
 import mindustry.net.Packets.*;
-import mindustrytool.commands.base.ServerCommands;
+import mindustrytool.commands.ServerCommands;
+import mindustrytool.handlers.VoteHandler;
 import mindustry.net.*;
 import java.time.format.*;
 
@@ -25,7 +26,8 @@ public class ServerController implements ApplicationListener {
 
     public static ServerController instance;
 
-    public final CommandHandler handler = new CommandHandler("");
+    public static final CommandHandler handler = new CommandHandler("/");
+    public static final VoteHandler voteHandler = new VoteHandler();
 
     public static volatile boolean autoPaused = false;
     public static Gamemode lastMode;
@@ -134,6 +136,11 @@ public class ServerController implements ApplicationListener {
                 Vars.state.set(State.menu);
                 Vars.net.closeServer();
             }
+        });
+
+        Events.on(EventType.PlayerLeave.class, event -> {
+            Player player = event.player;
+            voteHandler.removeVote(player);
         });
 
         Events.on(PlayEvent.class, event -> {

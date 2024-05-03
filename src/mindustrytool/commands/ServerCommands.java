@@ -1,4 +1,4 @@
-package mindustrytool.commands.base;
+package mindustrytool.commands;
 
 import arc.Core;
 import arc.Events;
