@@ -1,14 +1,17 @@
 package mindustrytool;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import arc.func.Cons;
-import mindustrytool.io.ServerMessageHandler;
+import mindustrytool.handlers.ServerMessageHandler;
 import mindustrytool.type.ServerExchange;
 import mindustrytool.type.ServerMessage;
 import mindustrytool.type.ServerMessageEvent;
@@ -21,13 +24,10 @@ public class APIGateway {
 
     private static final int REQUEST_TIMEOUT = 10;
 
-    public <T> T execute(String method, Object data, Class<T> clazz) {
+    public <T> T await(String method, Object data, Class<T> clazz) {
         String id = UUID.randomUUID().toString();
 
-        ServerExchange exchangeData = new ServerExchange()
-                .setData(data)
-                .setMethod(method)
-                .setId(id);
+        ServerExchange exchangeData = new ServerExchange().setData(data).setMethod(method).setId(id);
 
         CompletableFuture<String> request = new CompletableFuture<>();
 
@@ -49,8 +49,19 @@ public class APIGateway {
         }
     }
 
+    public void emit(String method, Object data) {
+        String id = UUID.randomUUID().toString();
+
+        ServerExchange exchangeData = new ServerExchange()//
+                .setData(data)//
+                .setMethod(method)//
+                .setId(id);
+
+        System.out.println(JsonUtils.toJsonString(exchangeData));
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void handleMessage(String input) {
+    public void handleMessage(String input) throws JsonParseException, JsonMappingException, IOException {
         ServerMessage message = JsonUtils.readJsonAsClass(input, ServerMessage.class);
 
         if (message == null) {
@@ -80,7 +91,7 @@ public class APIGateway {
         }
     }
 
-    public <T> void handle(String method, Class<T> clazz, Cons<ServerMessageEvent<T>> event) {
+    public <T> void on(String method, Class<T> clazz, Cons<ServerMessageEvent<T>> event) {
         var handler = new ServerMessageHandler<>(method, clazz, event);
 
         if (handlers.containsKey(method)) {

@@ -1,4 +1,4 @@
-package mindustrytool.io;
+package mindustrytool.handlers;
 
 import arc.func.Cons;
 import mindustrytool.type.ServerMessageEvent;

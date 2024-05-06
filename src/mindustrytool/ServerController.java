@@ -5,7 +5,11 @@ import arc.util.*;
 import arc.util.CommandHandler.*;
 import mindustry.Vars;
 import mindustry.core.*;
+import mindustry.core.GameState.State;
 import mindustry.game.*;
+import mindustry.game.EventType.PlayerChatEvent;
+import mindustry.game.EventType.PlayerJoin;
+import mindustry.game.EventType.PlayerLeave;
 import mindustry.gen.*;
 import mindustry.maps.*;
 import mindustry.maps.Maps.*;
@@ -13,6 +17,8 @@ import mindustry.mod.Mods.*;
 import mindustrytool.commands.ServerCommands;
 import mindustrytool.handlers.VoteHandler;
 import java.time.format.*;
+
+import static mindustrytool.MindustryToolPlugin.*;
 
 public class ServerController implements ApplicationListener {
     protected static DateTimeFormatter dateTime = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -34,13 +40,12 @@ public class ServerController implements ApplicationListener {
     }
 
     protected void setup() {
-        Core.settings.defaults(
-                "bans", "",
-                "admins", "",
-                "shufflemode", "custom",
-                "globalrules", "{reactorExplosions: false, logicUnitBuild: false}");
+        Core.settings.defaults("bans", "", "admins", "", "shufflemode", "custom", "globalrules",
+                "{reactorExplosions: false, logicUnitBuild: false}");
 
         ServerCommands.registerCommands(handler);
+
+        registerHandler();
 
         try {
             lastMode = Gamemode.valueOf(Core.settings.getString("lastServerMode", "survival"));
@@ -79,6 +84,33 @@ public class ServerController implements ApplicationListener {
             Player player = event.player;
             voteHandler.removeVote(player);
         });
+
+        Events.on(PlayerChatEvent.class, event -> {
+            Player player = event.player;
+            String message = event.message;
+
+            String chat = Strings.format("[@] => @", player.plainName(), message);
+
+            apiGateway.emit("CHAT_MESSAGE", chat);
+        });
+
+        Events.on(PlayerJoin.class, e -> {
+            if (Vars.state.isPaused() && autoPaused) {
+                Vars.state.set(State.playing);
+                autoPaused = false;
+            }
+        });
+
+        Events.on(PlayerLeave.class, e -> {
+            if (!Vars.state.isPaused() && Groups.player.size() == 1) {
+                Vars.state.set(State.paused);
+                autoPaused = true;
+            }
+        });
+    }
+
+    public void registerHandler() {
+        apiGateway.on("DISCORD_MESSAGE", String.class, event -> Call.sendMessage(event.getPayload()));
     }
 
     public void handleCommandString(String line) {
