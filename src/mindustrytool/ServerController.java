@@ -94,18 +94,28 @@ public class ServerController implements ApplicationListener {
             apiGateway.emit("CHAT_MESSAGE", chat);
         });
 
-        Events.on(PlayerJoin.class, e -> {
+        Events.on(PlayerJoin.class, event -> {
             if (Vars.state.isPaused() && autoPaused) {
                 Vars.state.set(State.playing);
                 autoPaused = false;
             }
+
+            String playerName = event.player != null ? event.player.plainName() : "Unknown";
+            String chat = Strings.format("@ @", playerName, "joined the server");
+
+            apiGateway.emit("CHAT_MESSAGE", chat);
         });
 
-        Events.on(PlayerLeave.class, e -> {
+        Events.on(PlayerLeave.class, event -> {
             if (!Vars.state.isPaused() && Groups.player.size() == 1) {
                 Vars.state.set(State.paused);
                 autoPaused = true;
             }
+
+            String playerName = event.player != null ? event.player.plainName() : "Unknown";
+            String chat = Strings.format("@ @", playerName, "leaved the server");
+
+            apiGateway.emit("CHAT_MESSAGE", chat);
         });
     }
 
