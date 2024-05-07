@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import arc.func.Cons;
+import arc.util.Log;
 import mindustrytool.handlers.ServerMessageHandler;
 import mindustrytool.type.ServerExchange;
 import mindustrytool.type.ServerMessage;
@@ -43,6 +44,8 @@ public class APIGateway {
             return JsonUtils.readJsonAsClass(node.get("data").toString(), clazz);
 
         } catch (Exception e) {
+            Log.err(exchangeData.toString(), e);
+            
             throw new RuntimeException(exchangeData.toString(), e);
         } finally {
             requests.remove(id);
