@@ -101,7 +101,7 @@ public class ServerController implements ApplicationListener {
             }
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ @", playerName, "joined the server");
+            String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
             apiGateway.emit("CHAT_MESSAGE", chat);
         });
@@ -113,7 +113,8 @@ public class ServerController implements ApplicationListener {
             }
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ @", playerName, "leaved the server");
+            String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                    Groups.player.size() - 1);
 
             apiGateway.emit("CHAT_MESSAGE", chat);
         });
