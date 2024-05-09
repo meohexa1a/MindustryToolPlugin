@@ -7,6 +7,7 @@ import mindustry.Vars;
 import mindustry.core.*;
 import mindustry.core.GameState.State;
 import mindustry.game.*;
+import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
@@ -14,6 +15,8 @@ import mindustry.gen.*;
 import mindustry.maps.*;
 import mindustry.maps.Maps.*;
 import mindustry.mod.Mods.*;
+import mindustry.net.Administration.Config;
+import mindustry.net.Packets.KickReason;
 import mindustrytool.commands.ServerCommands;
 import mindustrytool.handlers.VoteHandler;
 import java.time.format.*;
@@ -117,6 +120,31 @@ public class ServerController implements ApplicationListener {
                     Groups.player.size() - 1);
 
             apiGateway.emit("CHAT_MESSAGE", chat);
+        });
+
+        Events.on(GameOverEvent.class, event -> {
+
+            String message = Vars.state.rules.waves
+                    ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
+                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
+                    : Strings.format("Game over! Team @ is victorious with @ players online on map @.",
+                            event.winner.name, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+
+            apiGateway.emit("CHAT_MESSAGE", message);
+
+            Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
+            if (map != null) {
+
+                String winnerMessage = Vars.state.rules.pvp
+                        ? Strings.format("[accent]The @ team is victorious![]", event.winner.coloredName())
+                        : "[scarlet]Game over![]";
+
+                String nextMapMessage = "\nNext selected map: [accent]" + map.name() + "[white]"
+                        + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
+                        + "\nNew game begins in " + Config.roundExtraTime.num() + " seconds.";
+
+                apiGateway.emit("CHAT_MESSAGE", winnerMessage + nextMapMessage);
+            }
         });
     }
 
