@@ -15,8 +15,6 @@ import mindustry.gen.*;
 import mindustry.maps.*;
 import mindustry.maps.Maps.*;
 import mindustry.mod.Mods.*;
-import mindustry.net.Administration.Config;
-import mindustry.net.Packets.KickReason;
 import mindustrytool.commands.ServerCommands;
 import mindustrytool.handlers.VoteHandler;
 import java.time.format.*;
@@ -131,21 +129,8 @@ public class ServerController implements ApplicationListener {
                             event.winner.name, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
 
             apiGateway.emit("CHAT_MESSAGE", message);
-
-            Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
-            if (map != null) {
-
-                String winnerMessage = Vars.state.rules.pvp
-                        ? Strings.format("[accent]The @ team is victorious![]", event.winner.coloredName())
-                        : "[scarlet]Game over![]";
-
-                String nextMapMessage = "\nNext selected map: [accent]" + map.name() + "[white]"
-                        + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
-                        + "\nNew game begins in " + Config.roundExtraTime.num() + " seconds.";
-
-                apiGateway.emit("CHAT_MESSAGE", winnerMessage + nextMapMessage);
-            }
         });
+
     }
 
     public void registerHandler() {

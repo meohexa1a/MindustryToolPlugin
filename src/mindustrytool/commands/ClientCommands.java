@@ -2,7 +2,6 @@ package mindustrytool.commands;
 
 import arc.struct.Seq;
 import arc.util.CommandHandler;
-import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
@@ -25,7 +24,7 @@ public class ClientCommands {
                 return;
             }
 
-            Seq<Map> maps = Vars.maps.customMaps();
+            Seq<Map> maps = ServerController.voteHandler.getMaps();
 
             if (mapId < 0 || mapId > (maps.size - 1)) {
                 player.sendMessage("[red]Invalid map id");
@@ -49,7 +48,7 @@ public class ClientCommands {
 
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
-            Seq<Map> maps = Vars.maps.customMaps();
+            Seq<Map> maps = ServerController.voteHandler.getMaps();
             int page = 1;
             int maxPage = maps.size / MAPS_PER_PAGE + (maps.size % MAPS_PER_PAGE == 0 ? 0 : 1);
             if (args.length == 0) {
