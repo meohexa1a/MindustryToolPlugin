@@ -4,7 +4,6 @@ import arc.*;
 import arc.util.*;
 import arc.util.CommandHandler.*;
 import mindustry.Vars;
-import mindustry.core.*;
 import mindustry.core.GameState.State;
 import mindustry.game.*;
 import mindustry.game.EventType.GameOverEvent;
@@ -13,16 +12,13 @@ import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.gen.*;
 import mindustry.maps.*;
-import mindustry.maps.Maps.*;
-import mindustry.mod.Mods.*;
 import mindustrytool.commands.ServerCommands;
 import mindustrytool.handlers.VoteHandler;
-import java.time.format.*;
+import mindustrytool.messages.SystemUsageMessage;
 
 import static mindustrytool.MindustryToolPlugin.*;
 
 public class ServerController implements ApplicationListener {
-    protected static DateTimeFormatter dateTime = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     public static ServerController instance;
 
@@ -32,7 +28,7 @@ public class ServerController implements ApplicationListener {
     public static volatile boolean autoPaused = false;
     public static Gamemode lastMode;
     public static boolean inGameOverWait = false;
-    private int serverMaxTps = 60;
+    private int serverMaxTps = 120;
 
     public ServerController() {
         instance = this;
@@ -55,31 +51,6 @@ public class ServerController implements ApplicationListener {
         }
 
         Time.setDeltaProvider(() -> Core.graphics.getDeltaTime() * serverMaxTps);
-
-        if (!Vars.mods.orderedMods().isEmpty()) {
-            Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
-        }
-
-        int unsupported = Vars.mods.list().count(mod -> !mod.enabled());
-
-        if (unsupported > 0) {
-            Log.err("There were errors loading @ mod(s):", unsupported);
-            for (LoadedMod mod : Vars.mods.list().select(mod -> !mod.enabled())) {
-                Log.err("- @ &ly(@)", mod.state, mod.meta.name);
-            }
-        }
-
-        if (Version.build == -1) {
-            Log.warn("&lyYour server is running a custom build, which means that client checking is disabled.");
-            Log.warn(
-                    "&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
-        }
-
-        try {
-            Vars.maps.setShuffleMode(ShuffleMode.valueOf(Core.settings.getString("shufflemode")));
-        } catch (Exception event) {
-            Vars.maps.setShuffleMode(ShuffleMode.all);
-        }
 
         Events.on(EventType.PlayerLeave.class, event -> {
             Player player = event.player;
@@ -105,6 +76,8 @@ public class ServerController implements ApplicationListener {
             String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
             apiGateway.emit("CHAT_MESSAGE", chat);
+
+            event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
         });
 
         Events.on(PlayerLeave.class, event -> {
@@ -131,10 +104,6 @@ public class ServerController implements ApplicationListener {
             apiGateway.emit("CHAT_MESSAGE", message);
         });
 
-    }
-
-    public void registerHandler() {
-        apiGateway.on("DISCORD_MESSAGE", String.class, event -> Call.sendMessage(event.getPayload()));
     }
 
     public void handleCommandString(String line) {
@@ -167,5 +136,17 @@ public class ServerController implements ApplicationListener {
 
     public void setNextMapOverride(Map map) {
         Vars.maps.setNextMapOverride(map);
+    }
+
+    public void registerHandler() {
+        apiGateway.on("DISCORD_MESSAGE", String.class, event -> Call.sendMessage(event.getPayload()));
+
+        apiGateway.on("SYSTEM_USAGE", String.class, event -> {
+            SystemUsageMessage message = new SystemUsageMessage()//
+                    .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
+                    .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024);
+
+            event.response(message);
+        });
     }
 }
