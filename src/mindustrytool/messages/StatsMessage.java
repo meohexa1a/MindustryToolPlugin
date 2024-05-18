@@ -5,7 +5,9 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class SystemUsageMessage {
+public class StatsMessage {
     public long ramUsage;
     public long totalRam;
+    public int players;
+    public String mapName;
 }

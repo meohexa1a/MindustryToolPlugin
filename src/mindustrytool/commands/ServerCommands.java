@@ -465,7 +465,6 @@ public class ServerCommands {
                     }
                 });
 
-        // TODO should be a config, not a separate command.
         handler.register("shuffle", "[none/all/custom/builtin]", "Set map shuffling mode.", arg -> {
             if (arg.length == 0) {
                 Log.info("Shuffle mode current set to '@'.", Vars.maps.getShuffleMode());

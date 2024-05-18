@@ -14,7 +14,7 @@ import mindustry.gen.*;
 import mindustry.maps.*;
 import mindustrytool.commands.ServerCommands;
 import mindustrytool.handlers.VoteHandler;
-import mindustrytool.messages.SystemUsageMessage;
+import mindustrytool.messages.StatsMessage;
 
 import static mindustrytool.MindustryToolPlugin.*;
 
@@ -141,10 +141,13 @@ public class ServerController implements ApplicationListener {
     public void registerHandler() {
         apiGateway.on("DISCORD_MESSAGE", String.class, event -> Call.sendMessage(event.getPayload()));
 
-        apiGateway.on("SYSTEM_USAGE", String.class, event -> {
-            SystemUsageMessage message = new SystemUsageMessage()//
+        String mapName = Vars.state.map == null ? "" : Vars.state.map.plainName();
+
+        apiGateway.on("STATS", String.class, event -> {
+            StatsMessage message = new StatsMessage()//
                     .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
-                    .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024);
+                    .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(Groups.player.size())
+                    .setMapName(mapName);
 
             event.response(message);
         });
