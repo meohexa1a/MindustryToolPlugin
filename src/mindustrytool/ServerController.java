@@ -104,6 +104,12 @@ public class ServerController implements ApplicationListener {
             apiGateway.emit("CHAT_MESSAGE", message);
         });
 
+        Timer.schedule(() -> {
+            int pre = (int) (Core.app.getJavaHeap() / 1024 / 1024);
+            System.gc();
+            int post = (int) (Core.app.getJavaHeap() / 1024 / 1024);
+            Log.info("@ MB collected. Memory usage now at @ MB.", pre - post, post);
+        }, 0, 300);
     }
 
     public void handleCommandString(String line) {
