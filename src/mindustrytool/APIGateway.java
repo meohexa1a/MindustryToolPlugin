@@ -14,7 +14,6 @@ import arc.func.Cons;
 import arc.util.Log;
 import mindustrytool.handlers.ServerMessageHandler;
 import mindustrytool.type.ServerExchange;
-import mindustrytool.type.ServerMessage;
 import mindustrytool.type.ServerMessageEvent;
 import mindustrytool.utils.JsonUtils;
 
@@ -45,7 +44,7 @@ public class APIGateway {
 
         } catch (Exception e) {
             Log.err(exchangeData.toString(), e);
-            
+
             throw new RuntimeException(exchangeData.toString(), e);
         } finally {
             requests.remove(id);
@@ -65,32 +64,30 @@ public class APIGateway {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void handleMessage(String input) throws JsonParseException, JsonMappingException, IOException {
-        ServerMessage message = JsonUtils.readJsonAsClass(input, ServerMessage.class);
+        JsonNode node = JsonUtils.readJson(input);
 
-        if (message == null) {
-            throw new IllegalStateException("Server message is null");
-        }
+        String id = node.get("id").asText();
+        Boolean isRequest = node.get("request").asBoolean();
 
-        if (message.isResponse()) {
-            var request = requests.get(message.getId());
-
-            if (request != null) {
-                request.complete(input);
-            }
-        } else {
-            String method = message.getMethod();
+        if (isRequest) {
+            String method = node.get("method").asText();
             ServerMessageHandler<?> handler = handlers.get(method);
 
             if (handler == null) {
                 throw new IllegalStateException("No handler for method " + method);
             }
 
-            JsonNode node = JsonUtils.readJson(input);
-
             Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
-            var event = new ServerMessageEvent(message.getId(), method, data);
+            var event = new ServerMessageEvent(id, method, data);
 
             handler.apply(event);
+        } else {
+
+            var request = requests.get(id);
+
+            if (request != null) {
+                request.complete(input);
+            }
         }
     }
 
