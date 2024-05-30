@@ -1,4 +1,4 @@
-package mindustrytool.commands;
+package mindustrytool.handlers;
 
 import arc.Core;
 import arc.Events;
@@ -31,11 +31,11 @@ import mindustry.net.Administration.Config;
 import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.Packets.KickReason;
 import mindustry.type.Item;
-import mindustrytool.ServerController;
+import mindustrytool.MindustryToolPlugin;
 
-public class ServerCommands {
+public class ServerCommandHandler {
 
-    public static void registerCommands(CommandHandler handler) {
+    public void registerCommands(CommandHandler handler) {
         handler.register("help", "[command]", "Display the command list, or get help for a specific command.", arg -> {
             if (arg.length > 0) {
                 Command command = handler.getCommandList().find(c -> c.text.equalsIgnoreCase(arg[0]));
@@ -44,15 +44,13 @@ public class ServerCommands {
                 } else {
                     Log.info(command.text + ":");
                     Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi")
-                            + command.paramText
-                            + "&fr - &lw" + command.description);
+                            + command.paramText + "&fr - &lw" + command.description);
                 }
             } else {
                 Log.info("Commands:");
                 for (Command command : handler.getCommandList()) {
                     Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi")
-                            + command.paramText
-                            + "&fr - &lw" + command.description);
+                            + command.paramText + "&fr - &lw" + command.description);
                 }
             }
         });
@@ -109,11 +107,11 @@ public class ServerCommands {
                     Log.info("Loading map...");
 
                     Vars.logic.reset();
-                    ServerController.lastMode = preset;
-                    Core.settings.put("lastServerMode", ServerController.lastMode.name());
+                    MindustryToolPlugin.eventHandler.lastMode = preset;
+                    Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
 
                     try {
-                        Vars.world.loadMap(result, result.applyRules(ServerController.lastMode));
+                        Vars.world.loadMap(result, result.applyRules(MindustryToolPlugin.eventHandler.lastMode));
                         Vars.state.rules = result.applyRules(preset);
                         Vars.logic.play();
 
@@ -123,7 +121,6 @@ public class ServerCommands {
 
                         if (Config.autoPause.bool()) {
                             Vars.state.set(State.paused);
-                            ServerController.autoPaused = true;
                         }
                     } catch (MapException event) {
                         Log.err("@: @", event.map.plainName(), event.getMessage());
@@ -244,17 +241,6 @@ public class ServerCommands {
             Call.sendMessage("[scarlet][[Server]:[] " + arg[0]);
 
             Log.info("&fi&lcServer: &fr@", "&lw" + arg[0]);
-        });
-
-        handler.register("pause", "<on/off>", "Pause or unpause the game.", arg -> {
-            if (Vars.state.isMenu()) {
-                Log.err("Cannot pause without a game running.");
-                return;
-            }
-            boolean pause = arg[0].equals("on");
-            ServerController.autoPaused = false;
-            Vars.state.set(pause ? State.paused : State.playing);
-            Log.info(pause ? "Game paused." : "Game unpaused.");
         });
 
         handler.register("rules", "[remove/add] [name] [value...]",
@@ -641,8 +627,7 @@ public class ServerCommands {
                 Log.info("Players: @", Groups.player.size());
                 for (Player user : Groups.player) {
                     Log.info(" @&lm @ / ID: @ / IP: @", user.admin ? "&r[A]&c" : "&b[P]&c", user.plainName(),
-                            user.uuid(),
-                            user.ip());
+                            user.uuid(), user.ip());
                 }
             }
         });
@@ -677,8 +662,7 @@ public class ServerCommands {
                         int i = 0;
                         for (PlayerInfo info : infos) {
                             Log.info("[@] Trace info for player '@' / UUID @ / RAW @", i++, info.plainLastName(),
-                                    info.id,
-                                    info.lastName);
+                                    info.id, info.lastName);
                             Log.info("  all names used: @", info.names);
                             Log.info("  IP: @", info.lastIP);
                             Log.info("  all IPs used: @", info.ips);
@@ -711,8 +695,5 @@ public class ServerCommands {
             int post = (int) (Core.app.getJavaHeap() / 1024 / 1024);
             Log.info("@ MB collected. Memory usage now at @ MB.", pre - post, post);
         });
-
-        Vars.mods.eachClass(p -> p.registerServerCommands(handler));
     }
-
 }

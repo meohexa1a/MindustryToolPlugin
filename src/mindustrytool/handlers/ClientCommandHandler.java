@@ -1,15 +1,15 @@
-package mindustrytool.commands;
+package mindustrytool.handlers;
 
 import arc.struct.Seq;
 import arc.util.CommandHandler;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustrytool.ServerController;
+import mindustrytool.MindustryToolPlugin;
 
-public class ClientCommands {
+public class ClientCommandHandler {
 
-    public static void registerCommands(CommandHandler handler) {
+    public void registerCommands(CommandHandler handler) {
         handler.<Player>register("rtv", "<mapId>", "Vote to change map (map id in /maps)", (args, player) -> {
             if (args.length != 1) {
                 return;
@@ -24,31 +24,31 @@ public class ClientCommands {
                 return;
             }
 
-            Seq<Map> maps = ServerController.voteHandler.getMaps();
+            Seq<Map> maps = MindustryToolPlugin.voteHandler.getMaps();
 
             if (mapId < 0 || mapId > (maps.size - 1)) {
                 player.sendMessage("[red]Invalid map id");
                 return;
             }
-            if (ServerController.voteHandler.isVoted(player, mapId)) {
+            if (MindustryToolPlugin.voteHandler.isVoted(player, mapId)) {
                 Call.sendMessage("[red]RTV: " + player.name + " [accent]removed their vote for [yellow]"
                         + maps.get(mapId).name());
-                ServerController.voteHandler.removeVote(player, mapId);
+                MindustryToolPlugin.voteHandler.removeVote(player, mapId);
                 return;
             }
-            ServerController.voteHandler.vote(player, mapId);
+            MindustryToolPlugin.voteHandler.vote(player, mapId);
             Call.sendMessage("[red]RTV: [accent]" + player.name() + " [white]Want to change map to [yellow]"
                     + maps.get(mapId).name());
             Call.sendMessage("[red]RTV: [white]Current Vote for [yellow]" + maps.get(mapId).name() + "[white]: [green]"
-                    + ServerController.voteHandler.getVoteCount(mapId) + "/"
-                    + ServerController.voteHandler.getRequire());
+                    + MindustryToolPlugin.voteHandler.getVoteCount(mapId) + "/"
+                    + MindustryToolPlugin.voteHandler.getRequire());
             Call.sendMessage("[red]RTV: [white]Use [yellow]/rtv " + mapId + " [white]to add your vote to this map !");
-            ServerController.voteHandler.check(mapId);
+            MindustryToolPlugin.voteHandler.check(mapId);
         });
 
         handler.<Player>register("maps", "[page]", "Display available maps", (args, player) -> {
             final int MAPS_PER_PAGE = 10;
-            Seq<Map> maps = ServerController.voteHandler.getMaps();
+            Seq<Map> maps = MindustryToolPlugin.voteHandler.getMaps();
             int page = 1;
             int maxPage = maps.size / MAPS_PER_PAGE + (maps.size % MAPS_PER_PAGE == 0 ? 0 : 1);
             if (args.length == 0) {
