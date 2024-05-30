@@ -61,7 +61,6 @@ public class MindustryToolPlugin extends Plugin {
             String line;
             try {
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
                     try {
                         apiGateway.handleMessage(line);
                     } catch (NotJsonException ignored) {
@@ -86,7 +85,7 @@ public class MindustryToolPlugin extends Plugin {
     }
 
     public void handleCommandString(String line) {
-        CommandResponse response = MindustryToolPlugin.handler.handleMessage(line);
+        CommandResponse response = handler.handleMessage(line);
 
         if (response.type == ResponseType.unknownCommand) {
 
