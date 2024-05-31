@@ -74,10 +74,15 @@ public class MindustryToolPlugin extends Plugin {
         inputThread.setDaemon(true);
         inputThread.start();
 
-        Vars.mods.eachClass(p -> p.registerServerCommands(handler));
-
         eventHandler.init();
         apiHandler.registerHandler(apiGateway);
+
+        Vars.mods.eachClass(p -> p.registerServerCommands(handler));
+
+        if (Version.build == -1) {
+            warn("&lyYour server is running a custom build, which means that client checking is disabled.");
+            warn("&lyIt is highly advised to specify which version you're using by building with gradle args &lb&fb-Pbuildversion=&lr<build>");
+        }
     }
 
     public void handleCommandString(String line) {
