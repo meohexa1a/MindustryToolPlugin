@@ -49,12 +49,7 @@ public class MindustryToolPlugin extends Plugin {
             Vars.maps.setShuffleMode(ShuffleMode.all);
         }
 
-        Timer.schedule(() -> {
-            int pre = (int) (Core.app.getJavaHeap() / 1024 / 1024);
-            System.gc();
-            int post = (int) (Core.app.getJavaHeap() / 1024 / 1024);
-            Log.info("@ MB collected. Memory usage now at @ MB.", pre - post, post);
-        }, 0, 60);
+        Timer.schedule(() -> System.gc(), 0, 60);
 
         Runnable inputReader = () -> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -81,6 +76,7 @@ public class MindustryToolPlugin extends Plugin {
 
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
+        eventHandler.init();
         apiHandler.registerHandler(apiGateway);
     }
 
