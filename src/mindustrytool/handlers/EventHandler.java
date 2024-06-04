@@ -103,7 +103,7 @@ public class EventHandler {
 
         Events.on(SaveLoadEvent.class, e -> {
             Core.app.post(() -> {
-                if (Config.autoPause.bool() && Groups.player.isEmpty()) {
+                if (Groups.player.isEmpty()) {
                     Vars.state.set(State.paused);
                     autoPaused = true;
                 }
@@ -111,14 +111,14 @@ public class EventHandler {
         });
 
         Events.on(PlayerJoin.class, e -> {
-            if (Vars.state.isPaused() && autoPaused && Config.autoPause.bool()) {
+            if (Vars.state.isPaused() && autoPaused) {
                 Vars.state.set(State.playing);
                 autoPaused = false;
             }
         });
 
         Events.on(PlayerLeave.class, e -> {
-            if (!Vars.state.isPaused() && Config.autoPause.bool() && Groups.player.size() == 1) {
+            if (!Vars.state.isPaused() && Groups.player.size() == 1) {
                 Vars.state.set(State.paused);
                 autoPaused = true;
             }
