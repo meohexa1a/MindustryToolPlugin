@@ -118,10 +118,6 @@ public class ServerCommandHandler {
                         Log.info("Map loaded.");
 
                         Vars.netServer.openServer();
-
-                        if (Config.autoPause.bool()) {
-                            Vars.state.set(State.paused);
-                        }
                     } catch (MapException event) {
                         Log.err("@: @", event.map.plainName(), event.getMessage());
                     }

@@ -30,7 +30,6 @@ import mindustry.net.WorldReloader;
 public class EventHandler {
 
     public Task lastTask;
-    public boolean autoPaused = false;
 
     public Gamemode lastMode;
     public boolean inGameOverWait;
@@ -100,16 +99,14 @@ public class EventHandler {
         }
 
         Events.on(PlayerJoin.class, e -> {
-            if (Vars.state.isPaused() && autoPaused) {
+            if (Vars.state.isPaused()) {
                 Vars.state.set(State.playing);
-                autoPaused = false;
             }
         });
 
         Events.on(PlayerLeave.class, e -> {
             if (!Vars.state.isPaused() && Groups.player.size() == 1) {
                 Vars.state.set(State.paused);
-                autoPaused = true;
             }
         });
 
@@ -181,8 +178,6 @@ public class EventHandler {
 
                 reloader.end();
                 inGameOverWait = false;
-
-                Vars.state.set(Groups.player.isEmpty() ? State.paused : State.playing);
 
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
