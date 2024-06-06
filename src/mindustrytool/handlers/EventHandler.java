@@ -182,9 +182,7 @@ public class EventHandler {
                 reloader.end();
                 inGameOverWait = false;
 
-                if (!Groups.player.isEmpty()) {
-                    Vars.state.set(State.playing);
-                }
+                Vars.state.set(Groups.player.isEmpty() ? State.paused : State.playing);
 
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
@@ -192,7 +190,9 @@ public class EventHandler {
             }
         };
 
-        if (wait) {
+        if (wait)
+
+        {
             lastTask = Timer.schedule(reload, Config.roundExtraTime.num());
         } else {
             reload.run();
