@@ -67,6 +67,9 @@ public class MindustryToolPlugin extends Plugin {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                System.out.println("Server closed");
+                System.exit(0);
             }
         };
 

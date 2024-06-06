@@ -9,13 +9,11 @@ import arc.util.Timer.Task;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
-import mindustry.game.EventType;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
-import mindustry.game.EventType.SaveLoadEvent;
 import mindustry.game.Gamemode;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -101,15 +99,6 @@ public class EventHandler {
             }
         }
 
-        Events.on(SaveLoadEvent.class, e -> {
-            Core.app.post(() -> {
-                if (Groups.player.isEmpty()) {
-                    Vars.state.set(State.paused);
-                    autoPaused = true;
-                }
-            });
-        });
-
         Events.on(PlayerJoin.class, e -> {
             if (Vars.state.isPaused() && autoPaused) {
                 Vars.state.set(State.playing);
@@ -124,7 +113,7 @@ public class EventHandler {
             }
         });
 
-        Events.on(EventType.PlayerLeave.class, event -> {
+        Events.on(PlayerLeave.class, event -> {
             Player player = event.player;
             MindustryToolPlugin.voteHandler.removeVote(player);
         });
@@ -192,6 +181,11 @@ public class EventHandler {
 
                 reloader.end();
                 inGameOverWait = false;
+
+                if (!Groups.player.isEmpty()) {
+                    Vars.state.set(State.playing);
+                }
+
             } catch (MapException e) {
                 Log.err("@: @", e.map.plainName(), e.getMessage());
                 Vars.net.closeServer();
