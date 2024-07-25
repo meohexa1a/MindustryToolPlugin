@@ -28,8 +28,7 @@ allprojects{
 }
 
 dependencies{
-
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
 
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
