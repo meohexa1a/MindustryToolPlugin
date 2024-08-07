@@ -10,8 +10,7 @@ compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
 repositories{
-	google()
-	mavenCentral()
+    mavenCentral()
     maven{ url "https://raw.githubusercontent.com/Zelaux/MindustryRepo/master/repository" }
     maven{ url 'https://www.jitpack.io' }
 }
@@ -22,14 +21,21 @@ ext{
     jabelVersion = "93fde537c7"
 }
 
+//java 8 backwards compatibility flag
+allprojects{
+    tasks.withType(JavaCompile){
+        options.compilerArgs.addAll(['--release', '8'])
+    }
+}
+
 
 dependencies{
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
-
     compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 
 	compileOnly 'org.projectlombok:lombok:1.18.32'
+    
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.2'
 	
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
