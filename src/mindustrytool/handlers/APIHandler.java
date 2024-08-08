@@ -1,9 +1,11 @@
 package mindustrytool.handlers;
 
 import arc.Core;
+import arc.files.Fi;
 import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
+import mindustry.io.MapIO;
 import mindustrytool.APIGateway;
 import mindustrytool.messages.StatsMessage;
 
@@ -18,15 +20,15 @@ public class APIHandler {
             var map = Vars.state.map;
 
             String mapName = "";
-            String mapData = "";
+            byte[] mapData = {};
 
             if (map != null) {
-                Vars.control.saves.getSaveSlots()//
-                        .select(s -> s.getName().equals(TEMP_SAVE_NAME))//
-                        .forEach(s -> s.delete());
+                var pix = MapIO.generatePreview(Vars.world.tiles);
+                Fi file = Fi.tempFile(TEMP_SAVE_NAME);
+                file.writePng(pix);
 
-                var save = Vars.control.saves.addSave(TEMP_SAVE_NAME);
-                mapData = new String(save.file.readBytes());
+                mapData = file.readBytes();
+                mapName = map.name();
             }
 
             StatsMessage message = new StatsMessage()//

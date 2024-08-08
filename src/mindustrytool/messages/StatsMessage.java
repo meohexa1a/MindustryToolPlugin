@@ -10,5 +10,5 @@ public class StatsMessage {
     public long totalRam;
     public int players;
     public String mapName;
-    public String mapData;
+    public byte[] mapData;
 }
