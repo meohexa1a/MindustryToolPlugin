@@ -19,6 +19,7 @@ import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.VoteHandler;
+import mindustrytool.utils.HudUtils;
 
 public class MindustryToolPlugin extends Plugin {
 
@@ -81,6 +82,7 @@ public class MindustryToolPlugin extends Plugin {
         eventHandler.init();
         apiHandler.registerHandler(apiGateway);
 
+        HudUtils.init();
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         if (Version.build == -1) {

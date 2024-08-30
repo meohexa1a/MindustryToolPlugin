@@ -1,4 +1,4 @@
-package mindustrytool.messages;
+package mindustrytool.messages.request;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

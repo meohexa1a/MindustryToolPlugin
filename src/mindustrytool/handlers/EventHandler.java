@@ -14,6 +14,7 @@ import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
+import mindustry.game.EventType.ServerLoadEvent;
 import mindustry.game.Gamemode;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -25,6 +26,9 @@ import mindustry.mod.Mods.LoadedMod;
 import mindustry.net.Administration.Config;
 import mindustry.net.Packets.KickReason;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.GetServersMessageRequest;
+import mindustrytool.messages.response.GetServersMessageResponse;
+import mindustrytool.utils.HudUtils;
 import mindustry.net.WorldReloader;
 
 public class EventHandler {
@@ -130,6 +134,8 @@ public class EventHandler {
 
             MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
 
+            sendServerList(event.player, 0);
+
             event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
         });
 
@@ -142,7 +148,6 @@ public class EventHandler {
         });
 
         Events.on(GameOverEvent.class, event -> {
-
             String message = Vars.state.rules.waves
                     ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
                             Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
@@ -151,6 +156,29 @@ public class EventHandler {
 
             MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
         });
+
+        Events.on(ServerLoadEvent.class, event -> {
+            mindustrytool.Config.isLoaded = true;
+        });
+    }
+
+    public void sendServerList(Player player, int page) {
+        if (mindustrytool.Config.isHub()) {
+            var request = new GetServersMessageRequest().setPage(page).setSize(10);
+
+            var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
+            var servers = response.getServers();
+            var options = servers.stream()//
+                    .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId()), server.getName()))//
+                    .toArray(HudUtils.Option[]::new);
+
+            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", options);
+        }
+    }
+
+    public void onServerChoose(Player player, String id) {
+        var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
+        Call.connect(player.con, mindustrytool.Config.SERVER_IP, data);
     }
 
     public void cancelPlayTask() {

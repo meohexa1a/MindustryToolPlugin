@@ -13,13 +13,11 @@ import mindustry.gen.Player;
 import mindustry.maps.Map;
 
 public class VoteHandler {
-    private Seq<Map> maps = new Seq<>(Vars.maps.customMaps());
     public HashMap<Integer, Seq<String>> votes = new HashMap<>();
     public double ratio = 0.6;
 
     public void reset() {
         votes.clear();
-        maps = new Seq<>(Vars.maps.customMaps());
     }
 
     public void vote(Player player, int mapId) {
@@ -72,17 +70,13 @@ public class VoteHandler {
     }
 
     public Seq<Map> getMaps() {
-        if (maps.size == 0) {
-            maps = new Seq<>(Vars.maps.customMaps());
-        }
-
-        return maps;
+        return Vars.maps.customMaps();
     }
 
     public void check(int mapId) {
         if (getVoteCount(mapId) >= getRequire()) {
             Call.sendMessage("[red]RTV: [green]Vote passed! Changing map...");
-            Vars.maps.setNextMapOverride(maps.get(mapId));
+            Vars.maps.setNextMapOverride(getMaps().get(mapId));
             reset();
             Events.fire(new EventType.GameOverEvent(Team.crux));
             return;

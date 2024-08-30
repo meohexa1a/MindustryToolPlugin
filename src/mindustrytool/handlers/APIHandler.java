@@ -7,7 +7,8 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.io.MapIO;
 import mindustrytool.APIGateway;
-import mindustrytool.messages.StatsMessage;
+import mindustrytool.Config;
+import mindustrytool.messages.response.StatsMessageResponse;
 
 public class APIHandler {
 
@@ -31,13 +32,21 @@ public class APIHandler {
                 mapName = map.name();
             }
 
-            StatsMessage message = new StatsMessage()//
+            StatsMessageResponse message = new StatsMessageResponse()//
                     .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
                     .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(Groups.player.size())
                     .setMapName(mapName)//
                     .setMapData(mapData);
 
             event.response(message);
+        });
+
+        apiGateway.on("SERVER_LOADED", String.class, event -> {
+            event.response(Config.isLoaded);
+        });
+
+        apiGateway.on("SERVER_STARTED", String.class, event -> {
+            event.response(Vars.state.isGame());
         });
     }
 }

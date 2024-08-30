@@ -1,11 +1,11 @@
-package mindustrytool.messages;
+package mindustrytool.messages.response;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class StatsMessage {
+public class StatsMessageResponse {
     public long ramUsage;
     public long totalRam;
     public int players;

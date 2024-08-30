@@ -78,5 +78,8 @@ public class ClientCommandHandler {
                 player.sendMessage("[green]" + mapId + " [white]- [yellow]" + maps.get(mapId).name());
             }
         });
+        handler.<Player>register("servers", "", "Display available servers", (args, player) -> {
+            MindustryToolPlugin.eventHandler.sendServerList(player, 0);
+        });
     }
 }
