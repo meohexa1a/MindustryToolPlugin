@@ -177,8 +177,11 @@ public class EventHandler {
     }
 
     public void onServerChoose(Player player, String id) {
-        var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
-        Call.connect(player.con, mindustrytool.Config.SERVER_IP, data);
+        HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
+        Core.app.post(() -> {
+            var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
+            Call.connect(player.con, mindustrytool.Config.SERVER_IP, data);
+        });
     }
 
     public void cancelPlayTask() {

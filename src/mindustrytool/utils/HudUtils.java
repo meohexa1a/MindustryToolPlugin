@@ -16,7 +16,7 @@ public class HudUtils {
 
     public static final int SERVERS_UI = 1;
 
-    private static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, PlayerPressCallback[]>> menus = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, PlayerPressCallback[]>> menus = new ConcurrentHashMap<>();
 
     @FunctionalInterface
     public static interface PlayerPressCallback {
@@ -77,5 +77,9 @@ public class HudUtils {
         menus.values().forEach(menu -> {
             menu.remove(event.player.uuid());
         });
+    }
+
+    public static void closeFollowDisplay(Player player, int id) {
+        menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>()).remove(player.uuid());
     }
 }
