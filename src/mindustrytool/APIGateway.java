@@ -64,30 +64,34 @@ public class APIGateway {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void handleMessage(String input) throws JsonParseException, JsonMappingException, IOException {
-        JsonNode node = JsonUtils.readJson(input);
+        try {
+            JsonNode node = JsonUtils.readJson(input);
 
-        String id = node.get("id").asText();
-        Boolean isRequest = node.get("request").asBoolean();
+            String id = node.get("id").asText();
+            Boolean isRequest = node.get("request").asBoolean();
 
-        if (isRequest) {
-            String method = node.get("method").asText();
-            ServerMessageHandler<?> handler = handlers.get(method);
+            if (isRequest) {
+                String method = node.get("method").asText();
+                ServerMessageHandler<?> handler = handlers.get(method);
 
-            if (handler == null) {
-                throw new IllegalStateException("No handler for method " + method);
+                if (handler == null) {
+                    throw new IllegalStateException("No handler for method " + method);
+                }
+
+                Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
+                var event = new ServerMessageEvent(id, method, data);
+
+                handler.apply(event);
+            } else {
+
+                var request = requests.get(id);
+
+                if (request != null) {
+                    request.complete(input);
+                }
             }
-
-            Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
-            var event = new ServerMessageEvent(id, method, data);
-
-            handler.apply(event);
-        } else {
-
-            var request = requests.get(id);
-
-            if (request != null) {
-                request.complete(input);
-            }
+        } catch (Exception e) {
+            Log.err(e);
         }
     }
 
