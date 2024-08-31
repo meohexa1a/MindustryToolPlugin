@@ -1,8 +1,6 @@
 package mindustrytool.handlers;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import arc.Core;
 import arc.Events;
@@ -197,7 +195,7 @@ public class EventHandler {
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
                             "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
                                     server.getMapName())))//
-                    .collect(Collectors.toList());
+                    .toList();
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
 
