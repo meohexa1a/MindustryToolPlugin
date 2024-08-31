@@ -46,51 +46,6 @@ public class EventHandler {
             lastMode = Gamemode.survival;
         }
 
-        Events.on(GameOverEvent.class, event -> {
-            if (inGameOverWait) {
-                return;
-            }
-
-            if (Vars.state.rules.waves) {
-                Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
-                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-            } else {
-                Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
-                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
-            }
-
-            // set the next map to be played
-            Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
-            if (map != null) {
-                Call.infoMessage(
-                        (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
-                                : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
-                                + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
-                                + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
-                                + " seconds.");
-
-                Vars.state.gameOver = true;
-                Call.updateGameOver(event.winner);
-
-                Log.info("Selected next map to be @.", map.plainName());
-
-                play(() -> Vars.world.loadMap(map, map.applyRules(lastMode)));
-            } else {
-                Vars.netServer.kickAll(KickReason.gameover);
-                Vars.state.set(State.menu);
-                Vars.net.closeServer();
-            }
-        });
-
-        Events.on(PlayEvent.class, e -> {
-            try {
-                JsonValue value = JsonIO.json.fromJson(null, Core.settings.getString("globalrules"));
-                JsonIO.json.readFields(Vars.state.rules, value);
-            } catch (Throwable t) {
-                Log.err("Error applying custom rules, proceeding without them.", t);
-            }
-        });
-
         if (!Vars.mods.orderedMods().isEmpty()) {
             Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
         }
@@ -104,64 +59,109 @@ public class EventHandler {
             }
         }
 
-        Events.on(PlayerJoin.class, e -> {
-            if (Vars.state.isPaused()) {
-                Vars.state.set(State.playing);
-            }
-        });
+        Events.on(GameOverEvent.class, this::onGameOver);
+        Events.on(PlayEvent.class, this::onPlay);
+        Events.on(PlayerJoin.class, this::onPlayerJoin);
+        Events.on(PlayerLeave.class, this::onPlayerLeave);
+        Events.on(PlayerChatEvent.class, this::onPlayerChat);
+        Events.on(ServerLoadEvent.class, this::onServerLoad);
+    }
 
-        Events.on(PlayerLeave.class, e -> {
-            if (!Vars.state.isPaused() && Groups.player.size() == 1) {
-                Vars.state.set(State.paused);
-            }
-        });
+    public void onServerLoad(ServerLoadEvent event) {
+        Config.isLoaded = true;
+    }
 
-        Events.on(PlayerLeave.class, event -> {
-            Player player = event.player;
-            MindustryToolPlugin.voteHandler.removeVote(player);
-        });
+    public void onPlayerChat(PlayerChatEvent event) {
+        Player player = event.player;
+        String message = event.message;
 
-        Events.on(PlayerChatEvent.class, event -> {
-            Player player = event.player;
-            String message = event.message;
+        String chat = Strings.format("[@] => @", player.plainName(), message);
 
-            String chat = Strings.format("[@] => @", player.plainName(), message);
+        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+    }
 
-            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-        });
+    public void onPlayerLeave(PlayerLeave event) {
+        if (!Vars.state.isPaused() && Groups.player.size() == 1) {
+            Vars.state.set(State.paused);
+        }
 
-        Events.on(PlayerJoin.class, event -> {
-            String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
+        Player player = event.player;
+        MindustryToolPlugin.voteHandler.removeVote(player);
 
-            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+        String playerName = event.player != null ? event.player.plainName() : "Unknown";
+        String chat = Strings.format("@ leaved the server, current players: @", playerName, Groups.player.size() - 1);
 
+        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+    }
+
+    public void onPlayerJoin(PlayerJoin event) {
+        if (Vars.state.isPaused()) {
+            Vars.state.set(State.playing);
+        }
+
+        String playerName = event.player != null ? event.player.plainName() : "Unknown";
+        String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
+
+        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+
+        if (Config.isHub()) {
             sendServerList(event.player, 0);
+        }
 
-            event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
-        });
+        event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
+    }
 
-        Events.on(PlayerLeave.class, event -> {
-            String playerName = event.player != null ? event.player.plainName() : "Unknown";
-            String chat = Strings.format("@ leaved the server, current players: @", playerName,
-                    Groups.player.size() - 1);
+    public void onPlay(PlayEvent event) {
+        try {
+            JsonValue value = JsonIO.json.fromJson(null, Core.settings.getString("globalrules"));
+            JsonIO.json.readFields(Vars.state.rules, value);
+        } catch (Throwable t) {
+            Log.err("Error applying custom rules, proceeding without them.", t);
+        }
+    }
 
-            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-        });
+    public void onGameOver(GameOverEvent event) {
+        if (inGameOverWait) {
+            return;
+        }
 
-        Events.on(GameOverEvent.class, event -> {
-            String message = Vars.state.rules.waves
-                    ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
-                            Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
-                    : Strings.format("Game over! Team @ is victorious with @ players online on map @.",
-                            event.winner.name, Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+        if (Vars.state.rules.waves) {
+            Log.info("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave, Groups.player.size(),
+                    Strings.capitalize(Vars.state.map.plainName()));
+        } else {
+            Log.info("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
+                    Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+        }
 
-            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
-        });
+        // set the next map to be played
+        Map map = Vars.maps.getNextMap(lastMode, Vars.state.map);
+        if (map != null) {
+            Call.infoMessage(
+                    (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
+                            : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
+                            + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
+                            + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
+                            + " seconds.");
 
-        Events.on(ServerLoadEvent.class, event -> {
-            Config.isLoaded = true;
-        });
+            Vars.state.gameOver = true;
+            Call.updateGameOver(event.winner);
+
+            Log.info("Selected next map to be @.", map.plainName());
+
+            play(() -> Vars.world.loadMap(map, map.applyRules(lastMode)));
+        } else {
+            Vars.netServer.kickAll(KickReason.gameover);
+            Vars.state.set(State.menu);
+            Vars.net.closeServer();
+        }
+
+        String message = Vars.state.rules.waves
+                ? Strings.format("Game over! Reached wave @ with @ players online on map @.", Vars.state.wave,
+                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()))
+                : Strings.format("Game over! Team @ is victorious with @ players online on map @.", event.winner.name,
+                        Groups.player.size(), Strings.capitalize(Vars.state.map.plainName()));
+
+        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
     }
 
     public void sendServerList(Player player, int page) {
@@ -172,9 +172,12 @@ public class EventHandler {
             var servers = response.getServers();
             var options = servers.stream()//
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId()), server.getName()))//
-                    .toArray(HudUtils.Option[]::new);
+                    .toList();
 
-            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", options);
+            options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "Close"));
+
+            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "",
+                    options.toArray(HudUtils.Option[]::new));
         });
     }
 
