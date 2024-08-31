@@ -78,8 +78,13 @@ public class EventHandler {
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.run(EventType.Trigger.update, this::onUpdate);
 
-        try {
+        if (Config.isHub()) {
+            setupCustomServerDiscovery();
+        }
+    }
 
+    private void setupCustomServerDiscovery() {
+        try {
             var providerField = Net.class.getDeclaredField("provider");
             providerField.setAccessible(true);
             var provider = (ArcNetProvider) providerField.get(Vars.net);
