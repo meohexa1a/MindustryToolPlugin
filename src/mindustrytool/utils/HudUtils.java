@@ -2,6 +2,8 @@ package mindustrytool.utils;
 
 import mindustry.gen.Call;
 import mindustry.gen.Player;
+import mindustrytool.Config;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
 
@@ -82,5 +84,13 @@ public class HudUtils {
     public static void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(id);
         menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>()).remove(player.uuid());
+    }
+
+    public static void executeExpectError(Runnable runnable) {
+        try {
+            Config.BACKGROUND_TASK_EXECUTOR.execute(runnable);
+        } catch (Exception e) {
+            Log.err(e);
+        }
     }
 }

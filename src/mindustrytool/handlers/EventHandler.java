@@ -23,8 +23,8 @@ import mindustry.io.JsonIO;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.mod.Mods.LoadedMod;
-import mindustry.net.Administration.Config;
 import mindustry.net.Packets.KickReason;
+import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
@@ -65,7 +65,8 @@ public class EventHandler {
                         (Vars.state.rules.pvp ? "[accent]The " + event.winner.coloredName() + " team is victorious![]\n"
                                 : "[scarlet]Game over![]\n") + "\nNext selected map: [accent]" + map.name() + "[white]"
                                 + (map.hasTag("author") ? " by[accent] " + map.author() + "[white]" : "") + "."
-                                + "\nNew game begins in " + Config.roundExtraTime.num() + " seconds.");
+                                + "\nNew game begins in " + mindustry.net.Administration.Config.roundExtraTime.num()
+                                + " seconds.");
 
                 Vars.state.gameOver = true;
                 Call.updateGameOver(event.winner);
@@ -158,12 +159,12 @@ public class EventHandler {
         });
 
         Events.on(ServerLoadEvent.class, event -> {
-            mindustrytool.Config.isLoaded = true;
+            Config.isLoaded = true;
         });
     }
 
     public void sendServerList(Player player, int page) {
-        if (mindustrytool.Config.isHub()) {
+        HudUtils.executeExpectError(() -> {
             var request = new GetServersMessageRequest().setPage(page).setSize(10);
 
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
@@ -173,16 +174,16 @@ public class EventHandler {
                     .toArray(HudUtils.Option[]::new);
 
             HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", options);
-        }
+        });
     }
 
     public void onServerChoose(Player player, String id) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
-        Core.app.post(() -> {
+        HudUtils.executeExpectError(() -> {
             player.sendMessage("Starting server");
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
             player.sendMessage("Redirecting");
-            Call.connect(player.con, mindustrytool.Config.SERVER_IP, data);
+            Call.connect(player.con, Config.SERVER_IP, data);
         });
     }
 
@@ -221,7 +222,7 @@ public class EventHandler {
         if (wait)
 
         {
-            lastTask = Timer.schedule(reload, Config.roundExtraTime.num());
+            lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
         } else {
             reload.run();
         }

@@ -1,5 +1,8 @@
 package mindustrytool;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 public class Config {
 
     public static boolean isHub() {
@@ -9,4 +12,6 @@ public class Config {
     public static final String SERVER_IP = "15.235.147.219";
 
     public static Boolean isLoaded = false;
+
+    public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
 }

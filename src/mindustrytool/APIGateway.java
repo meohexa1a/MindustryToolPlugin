@@ -24,7 +24,7 @@ public class APIGateway {
 
     private static final int REQUEST_TIMEOUT = 10;
 
-    public <T> T execute(String method, Object data, Class<T> clazz) {
+    public <T> T execute(String method, Object data, Class<T> clazz) throws RuntimeException {
         String id = UUID.randomUUID().toString();
 
         ServerExchange exchangeData = new ServerExchange().setData(data).setMethod(method).setId(id);
