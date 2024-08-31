@@ -1,6 +1,8 @@
 package mindustrytool.handlers;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import arc.Core;
 import arc.Events;
@@ -168,7 +170,7 @@ public class EventHandler {
 
     public void sendHub(Player player) {
 
-        var options = List.of(//
+        var options = Arrays.asList(//
                 HudUtils.option((p) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
                 HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
                 HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "[red]Close")//
@@ -195,7 +197,7 @@ public class EventHandler {
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
                             "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
                                     server.getMapName())))//
-                    .toList();
+                    .collect(Collectors.toList());
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
 
