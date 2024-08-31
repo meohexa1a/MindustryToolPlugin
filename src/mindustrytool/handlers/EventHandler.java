@@ -179,7 +179,9 @@ public class EventHandler {
     public void onServerChoose(Player player, String id) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Core.app.post(() -> {
+            player.sendMessage("Starting server");
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
+            player.sendMessage("Redirecting");
             Call.connect(player.con, mindustrytool.Config.SERVER_IP, data);
         });
     }
