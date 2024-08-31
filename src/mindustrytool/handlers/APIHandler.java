@@ -23,25 +23,12 @@ public class APIHandler {
         apiGateway.on("DISCORD_MESSAGE", String.class, event -> Call.sendMessage(event.getPayload()));
 
         apiGateway.on("STATS", String.class, event -> {
-            var map = Vars.state.map;
+            StatsMessageResponse message = getStats();
 
-            String mapName = "";
-            byte[] mapData = {};
-
-            if (map != null) {
-                var pix = MapIO.generatePreview(Vars.world.tiles);
-                Fi file = Fi.tempFile(TEMP_SAVE_NAME);
-                file.writePng(pix);
-
-                mapData = file.readBytes();
-                mapName = map.name();
-            }
-
-            StatsMessageResponse message = new StatsMessageResponse()//
-                    .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
-                    .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024).setPlayers(Groups.player.size())
-                    .setMapName(mapName)//
-                    .setMapData(mapData);
+            event.response(message);
+        });
+        apiGateway.on("DETAIL_STATS", String.class, event -> {
+            StatsMessageResponse message = getDetailStats();
 
             event.response(message);
         });
@@ -98,5 +85,39 @@ public class APIHandler {
 
             event.response("STARTED");
         });
+    }
+
+    private StatsMessageResponse getStats() {
+        var map = Vars.state.map;
+
+        String mapName = "";
+
+        if (map != null) {
+            mapName = map.name();
+        }
+
+        return new StatsMessageResponse()//
+                .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
+                .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
+                .setPlayers(Groups.player.size())//
+                .setMapName(mapName);
+
+    }
+
+    private StatsMessageResponse getDetailStats() {
+        var map = Vars.state.map;
+
+        byte[] mapData = {};
+
+        if (map != null) {
+            var pix = MapIO.generatePreview(Vars.world.tiles);
+            Fi file = Fi.tempFile(TEMP_SAVE_NAME);
+            file.writePng(pix);
+
+            mapData = file.readBytes();
+        }
+
+        return getStats().setMapData(mapData);
+
     }
 }
