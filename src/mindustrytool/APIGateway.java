@@ -22,7 +22,7 @@ public class APIGateway {
     private ConcurrentHashMap<String, CompletableFuture<String>> requests = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ServerMessageHandler<?>> handlers = new ConcurrentHashMap<>();
 
-    private static final int REQUEST_TIMEOUT = 10;
+    private static final int REQUEST_TIMEOUT = 20;
 
     public <T> T execute(String method, Object data, Class<T> clazz) throws RuntimeException {
         String id = UUID.randomUUID().toString();
