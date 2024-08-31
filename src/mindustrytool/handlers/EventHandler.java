@@ -29,6 +29,7 @@ import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.Utils;
 import mindustry.net.WorldReloader;
 
 public class EventHandler {
@@ -164,7 +165,7 @@ public class EventHandler {
     }
 
     public void sendServerList(Player player, int page) {
-        HudUtils.executeExpectError(() -> {
+        Utils.executeExpectError(() -> {
             var request = new GetServersMessageRequest().setPage(page).setSize(10);
 
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
@@ -179,7 +180,7 @@ public class EventHandler {
 
     public void onServerChoose(Player player, String id) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
-        HudUtils.executeExpectError(() -> {
+        Utils.executeExpectError(() -> {
             player.sendMessage("Starting server");
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
             player.sendMessage("Redirecting");
