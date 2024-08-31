@@ -169,9 +169,9 @@ public class EventHandler {
     public void sendHub(Player player) {
 
         var options = List.of(//
-                HudUtils.option((p) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "Website"), //
-                HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "Discord"), //
-                HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "Close")//
+                HudUtils.option((p) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
+                HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
+                HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "[red]Close")//
         );
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", """
                     Command
@@ -197,7 +197,7 @@ public class EventHandler {
                                     server.getMapName())))//
                     .toList();
 
-            options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "Close"));
+            options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
 
             HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "",
                     options.toArray(HudUtils.Option[]::new));
