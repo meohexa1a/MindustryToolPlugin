@@ -182,7 +182,6 @@ public class EventHandler {
                     [yellow]/servers[white] to show server list
                     [yellow]/rtv[white] to vote for changing map
                     [yellow]/maps[white] to see map list
-
                 """, options.toArray(HudUtils.Option[]::new));
 
     }
@@ -196,7 +195,7 @@ public class EventHandler {
             var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
                             "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
-                                    server.getMapName())))//
+                                    server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//
                     .toList());
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
