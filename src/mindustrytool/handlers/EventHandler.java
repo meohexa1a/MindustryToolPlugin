@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import arc.Core;
 import arc.Events;
+import arc.graphics.Color;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
@@ -12,6 +13,8 @@ import arc.util.Timer.Task;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
+import mindustry.entities.Effect;
+import mindustry.game.EventType;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
@@ -68,6 +71,15 @@ public class EventHandler {
         Events.on(PlayerLeave.class, this::onPlayerLeave);
         Events.on(PlayerChatEvent.class, this::onPlayerChat);
         Events.on(ServerLoadEvent.class, this::onServerLoad);
+        Events.run(EventType.Trigger.update, this::onUpdate);
+    }
+
+    public void onUpdate() {
+        Groups.player.each(p -> {
+            if (p.unit().moving()) {
+                Call.effect(Effect.all.first(), p.x, p.y, 0, Color.white);
+            }
+        });
     }
 
     public void onServerLoad(ServerLoadEvent event) {
