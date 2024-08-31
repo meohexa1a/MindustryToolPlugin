@@ -1,11 +1,13 @@
 package mindustrytool.handlers;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import arc.Core;
 import arc.Events;
 import arc.graphics.Color;
+import arc.net.Server;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
@@ -13,6 +15,7 @@ import arc.util.Timer.Task;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
+import mindustry.core.Version;
 import mindustry.entities.Effect;
 import mindustry.game.EventType;
 import mindustry.game.EventType.GameOverEvent;
@@ -36,6 +39,8 @@ import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
+import mindustry.net.ArcNetProvider;
+import mindustry.net.Net;
 import mindustry.net.WorldReloader;
 
 public class EventHandler {
@@ -72,6 +77,61 @@ public class EventHandler {
         Events.on(PlayerChatEvent.class, this::onPlayerChat);
         Events.on(ServerLoadEvent.class, this::onServerLoad);
         Events.run(EventType.Trigger.update, this::onUpdate);
+
+        try {
+
+            var providerField = Net.class.getDeclaredField("provider");
+            providerField.setAccessible(true);
+            var provider = (ArcNetProvider) providerField.get(Vars.net);
+            var serverField = ArcNetProvider.class.getDeclaredField("server");
+            serverField.setAccessible(true);
+            var server = (Server) serverField.get(provider);
+
+            server.setDiscoveryHandler((address, handler) -> {
+                String name = mindustry.net.Administration.Config.serverName.string();
+                String description = mindustry.net.Administration.Config.desc.string();
+                String map = Vars.state.map.name();
+
+                ByteBuffer buffer = ByteBuffer.allocate(500);
+
+                int players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
+
+                writeString(buffer, name, 100);
+                writeString(buffer, map, 64);
+
+                buffer.putInt(Core.settings.getInt("totalPlayers", players));
+                buffer.putInt(Vars.state.wave);
+                buffer.putInt(Version.build);
+                writeString(buffer, Version.type);
+
+                buffer.put((byte) Vars.state.rules.mode().ordinal());
+                buffer.putInt(Vars.netServer.admins.getPlayerLimit());
+
+                writeString(buffer, description, 100);
+                if (Vars.state.rules.modeName != null) {
+                    writeString(buffer, Vars.state.rules.modeName, 50);
+                }
+                buffer.position(0);
+                handler.respond(buffer);
+            });
+
+        } catch (Exception e) {
+            Log.err(e);
+        }
+    }
+
+    private static void writeString(ByteBuffer buffer, String string) {
+        writeString(buffer, string, 32);
+    }
+
+    private static void writeString(ByteBuffer buffer, String string, int maxlen) {
+        byte[] bytes = string.getBytes(Vars.charset);
+        if (bytes.length > maxlen) {
+            bytes = Arrays.copyOfRange(bytes, 0, maxlen);
+        }
+
+        buffer.put((byte) bytes.length);
+        buffer.put(bytes);
     }
 
     public void onUpdate() {
