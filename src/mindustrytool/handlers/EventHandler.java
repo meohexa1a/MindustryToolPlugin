@@ -194,7 +194,7 @@ public class EventHandler {
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
-                            "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
+                            "%s [cyan]Players: %s [green]Map: %s".formatted(server.getName(), server.getPlayers(),
                                     server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//
                     .toList());
 
@@ -208,7 +208,7 @@ public class EventHandler {
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Utils.executeExpectError(() -> {
-            player.sendMessage("Starting server %s, redirection will happen soon".formatted(name));
+            player.sendMessage("Starting server %s, [white]redirection will happen soon".formatted(name));
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
             player.sendMessage("Redirecting");
             Call.connect(player.con, Config.SERVER_IP, data);
