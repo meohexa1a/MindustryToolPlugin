@@ -36,6 +36,7 @@ import mindustry.net.Packets.KickReason;
 import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.GetServersMessageRequest;
+import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
@@ -178,6 +179,9 @@ public class EventHandler {
         String chat = Strings.format("@ leaved the server, current players: @", playerName, Groups.player.size() - 1);
 
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+        MindustryToolPlugin.apiGateway.emit("PLAYER_LEAVE", new PlayerMessageRequest()//
+                .setName(playerName)//
+                .setUuid(event.player.uuid()));
     }
 
     public void onPlayerJoin(PlayerJoin event) {
@@ -189,6 +193,9 @@ public class EventHandler {
         String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+        MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", new PlayerMessageRequest()//
+                .setName(playerName)//
+                .setUuid(event.player.uuid()));
 
         if (Config.isHub()) {
             sendHub(event.player);
