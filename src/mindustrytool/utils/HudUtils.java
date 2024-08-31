@@ -15,7 +15,8 @@ import mindustry.game.EventType.PlayerLeave;
 
 public class HudUtils {
 
-    public static final int SERVERS_UI = 1;
+    public static final int HUB_UI = 1;
+    public static final int SERVERS_UI = 2;
 
     public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, PlayerPressCallback[]>> menus = new ConcurrentHashMap<>();
 

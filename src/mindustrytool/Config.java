@@ -9,9 +9,10 @@ public class Config {
         return mindustry.net.Administration.Config.all.find(conf -> conf.name.equalsIgnoreCase("port")).num() == 6567;
     }
 
-    public static final String SERVER_IP = "15.235.147.219";
-
     public static Boolean isLoaded = false;
 
     public static final Executor BACKGROUND_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
+
+    public static final String SERVER_IP = "15.235.147.219";
+    public static final String DISCORD_INVITE_URL = "https://discord.com/invite/DCX5yrRUyp";
 }

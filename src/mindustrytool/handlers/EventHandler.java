@@ -1,5 +1,7 @@
 package mindustrytool.handlers;
 
+import java.util.List;
+
 import arc.Core;
 import arc.Events;
 import arc.util.Log;
@@ -105,7 +107,7 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
 
         if (Config.isHub()) {
-            sendServerList(event.player, 0);
+            sendHub(event.player);
         }
 
         event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
@@ -164,6 +166,19 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
     }
 
+    public void sendHub(Player player) {
+
+        var options = List.of(//
+                HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "Discord"), //
+                HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "Close")//
+        );
+        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", "", options.toArray(HudUtils.Option[]::new));
+
+        sendServerList(player, 0);
+
+        player.sendMessage("User /servers to see server list");
+    }
+
     public void sendServerList(Player player, int page) {
         Utils.executeExpectError(() -> {
             var request = new GetServersMessageRequest().setPage(page).setSize(10);
@@ -171,7 +186,8 @@ public class EventHandler {
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
             var servers = response.getServers();
             var options = servers.stream()//
-                    .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId()), server.getName()))//
+                    .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
+                            server.getName()))//
                     .toList();
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "Close"));
@@ -181,10 +197,10 @@ public class EventHandler {
         });
     }
 
-    public void onServerChoose(Player player, String id) {
+    public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Utils.executeExpectError(() -> {
-            player.sendMessage("Starting server");
+            player.sendMessage("Starting server %s, redirection will happen soon".formatted(name));
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
             player.sendMessage("Redirecting");
             Call.connect(player.con, Config.SERVER_IP, data);
