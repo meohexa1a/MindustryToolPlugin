@@ -19,10 +19,23 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}
           path: build/libs/${{ github.event.repository.name }}.jar
-      - uses: 'marvinpinto/action-automatic-releases@latest'
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: 'latest'
-          title: 'Development Build'
-          files: |
-            *.jar
+          draft: false
+          prerelease: false
+          release_name: Latest
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: upload artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/MindustryToolPlugin.jar
+          asset_name: MindustryToolPlugin.jar
+          asset_content_type: application/gzip
