@@ -4,13 +4,19 @@ import mindustry.gen.Call;
 import mindustry.gen.Player;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import arc.Events;
 import arc.util.Log;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import mindustry.game.EventType.MenuOptionChooseEvent;
+import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 
 public class HudUtils {
@@ -18,23 +24,40 @@ public class HudUtils {
     public static final int HUB_UI = 1;
     public static final int SERVERS_UI = 2;
 
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private static final List<Player> leaved = new ArrayList<Player>();
+    private static final List<Player> markForRemove = new ArrayList<Player>();
+
     public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, PlayerPressCallback[]>> menus = new ConcurrentHashMap<>();
 
     @FunctionalInterface
-    public static interface PlayerPressCallback {
+    public interface PlayerPressCallback {
         void accept(Player player);
     }
 
     @Data
-    @AllArgsConstructor
+    @RequiredArgsConstructor
     public static class Option {
-        PlayerPressCallback callback;
-        String text[];
+        private final PlayerPressCallback callback;
+        private final String text[];
     }
 
     public static void init() {
+
+        executor.scheduleAtFixedRate(HudUtils::cleanUpCallback, 0, 10, TimeUnit.MINUTES);
+
         Events.on(PlayerLeave.class, HudUtils::onPlayerLeave);
+        Events.on(PlayerJoin.class, HudUtils::onPlayerJoin);
         Events.on(MenuOptionChooseEvent.class, HudUtils::onMenuOptionChoose);
+    }
+
+    private static void onPlayerJoin(PlayerJoin event) {
+        leaved.removeIf(p -> p.uuid().equals(event.player.uuid()));
+        markForRemove.removeIf(p -> p.uuid().equals(event.player.uuid()));
+    }
+
+    private static void onPlayerLeave(PlayerLeave event) {
+        leaved.add(event.player);
     }
 
     public static Option option(PlayerPressCallback callback, String... text) {
@@ -75,10 +98,22 @@ public class HudUtils {
         callbacks[event.option].accept(event.player);
     }
 
-    public static void onPlayerLeave(PlayerLeave event) {
-        menus.values().forEach(menu -> {
-            menu.remove(event.player.uuid());
+    public static void cleanUpCallback() {
+        markForRemove.forEach(player -> {
+            menus.values().forEach(menu -> {
+                menu.remove(player.uuid());
+            });
         });
+
+        markForRemove.clear();
+
+        leaved.forEach(player -> {
+            menus.values().forEach(menu -> {
+                markForRemove.add(player);
+            });
+        });
+
+        leaved.clear();
     }
 
     public static void closeFollowDisplay(Player player, int id) {
