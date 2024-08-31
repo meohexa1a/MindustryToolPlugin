@@ -13,6 +13,7 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustrytool.APIGateway;
 import mindustrytool.Config;
+import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.response.StatsMessageResponse;
 
 public class APIHandler {
@@ -96,10 +97,20 @@ public class APIHandler {
             mapName = map.name();
         }
 
+        int players = Groups.player.size();
+
+        if (Config.isHub()) {
+            try {
+                players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
+            } catch (Exception e) {
+                Log.err(e);
+            }
+        }
+
         return new StatsMessageResponse()//
                 .setRamUsage(Core.app.getJavaHeap() / 1024 / 1024)
                 .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
-                .setPlayers(Groups.player.size())//
+                .setPlayers(players)//
                 .setMapName(mapName);
 
     }
