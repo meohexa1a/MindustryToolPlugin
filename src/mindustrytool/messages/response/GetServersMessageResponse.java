@@ -18,5 +18,7 @@ public class GetServersMessageResponse {
         private String description;
         private String mode;
         private int port;
+        private int players;
+        private String mapName;
     }
 }

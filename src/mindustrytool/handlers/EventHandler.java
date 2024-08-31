@@ -173,11 +173,16 @@ public class EventHandler {
                 HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "Discord"), //
                 HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "Close")//
         );
-        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", "", options.toArray(HudUtils.Option[]::new));
+        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", """
+                    Command
+                    [yellow]/servers[white] to show server list
+                    [yellow]/rtv[white] to vote for changing map
+                    [yellow]/maps[white] to see map list
+
+                """, options.toArray(HudUtils.Option[]::new));
 
         sendServerList(player, 0);
 
-        player.sendMessage("User /servers to see server list");
     }
 
     public void sendServerList(Player player, int page) {
@@ -188,7 +193,8 @@ public class EventHandler {
             var servers = response.getServers();
             var options = servers.stream()//
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
-                            server.getName()))//
+                            "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
+                                    server.getMapName())))//
                     .toList();
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "Close"));
