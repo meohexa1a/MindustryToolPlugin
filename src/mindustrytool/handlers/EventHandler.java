@@ -182,7 +182,6 @@ public class EventHandler {
                 """, options.toArray(HudUtils.Option[]::new));
 
         sendServerList(player, 0);
-
     }
 
     public void sendServerList(Player player, int page) {

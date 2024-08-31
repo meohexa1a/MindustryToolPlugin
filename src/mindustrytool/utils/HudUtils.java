@@ -82,7 +82,7 @@ public class HudUtils {
     }
 
     public static void closeFollowDisplay(Player player, int id) {
-        Call.hideFollowUpMenu(id);
+        Call.hideFollowUpMenu(player.con, id);
         menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>()).remove(player.uuid());
     }
 }
