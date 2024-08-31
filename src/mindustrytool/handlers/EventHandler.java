@@ -94,7 +94,13 @@ public class EventHandler {
 
                 ByteBuffer buffer = ByteBuffer.allocate(500);
 
-                int players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
+                int players = 0;
+
+                try {
+                    players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
+                } catch (Exception e) {
+                    Log.err(e);
+                }
 
                 writeString(buffer, name, 100);
                 writeString(buffer, map, 64);
