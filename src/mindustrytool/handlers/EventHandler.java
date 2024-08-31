@@ -1,5 +1,6 @@
 package mindustrytool.handlers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import arc.Core;
@@ -192,11 +193,11 @@ public class EventHandler {
 
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
             var servers = response.getServers();
-            var options = servers.stream()//
+            var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
                             "%s Players: %s Map: %s".formatted(server.getName(), server.getPlayers(),
                                     server.getMapName())))//
-                    .toList();
+                    .toList());
 
             options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
 
