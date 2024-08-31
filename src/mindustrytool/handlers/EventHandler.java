@@ -171,7 +171,10 @@ public class EventHandler {
         var options = Arrays.asList(//
                 HudUtils.option((p) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
                 HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
-                HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI), "[red]Close")//
+                HudUtils.option((p) -> {
+                    HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
+                    sendServerList(player, 0);
+                }, "[red]Close")//
         );
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", """
                     Command
@@ -181,7 +184,6 @@ public class EventHandler {
 
                 """, options.toArray(HudUtils.Option[]::new));
 
-        sendServerList(player, 0);
     }
 
     public void sendServerList(Player player, int page) {
