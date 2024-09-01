@@ -293,7 +293,7 @@ public class EventHandler {
     public void sendHub(Player player) {
 
         var options = Arrays.asList(//
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Rules"), //
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"), //
                 HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
                 HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
                 HudUtils.option((p, state) -> {
