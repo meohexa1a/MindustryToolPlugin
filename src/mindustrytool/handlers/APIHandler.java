@@ -14,6 +14,7 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.APIGateway;
+import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
 
 public class APIHandler {
@@ -87,22 +88,21 @@ public class APIHandler {
             event.response("STARTED");
         });
 
-        apiGateway.on("SET_ADMIN", String.class, event -> {
-            var args = event.getPayload().split(" ");
-            var uuid = args[0];
-            var add = args[1].equals("true");
+        apiGateway.on("SET_PLAYER", SetPlayerMessageRequest.class, event -> {
+            var uuid = event.getPayload().getUuid();
+            var isAdmin = event.getPayload().isAdmin();
 
             PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
             Player playert = Groups.player.find(p -> p.getInfo() == target);
 
             if (target != null) {
-                if (add) {
+                if (isAdmin) {
                     Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
                 } else {
                     Vars.netServer.admins.unAdminPlayer(target.id);
                 }
                 if (playert != null)
-                    playert.admin = add;
+                    playert.admin = isAdmin;
                 Log.info("Changed admin status of player: @", target.plainLastName());
             } else {
                 Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");

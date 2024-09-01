@@ -214,6 +214,7 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
         MindustryToolPlugin.apiGateway.emit("PLAYER_LEAVE", new PlayerMessageRequest()//
                 .setName(playerName)//
+                .setIp(event.player.ip())//
                 .setUuid(event.player.uuid()));
     }
 
@@ -228,6 +229,7 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
         MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", new PlayerMessageRequest()//
                 .setName(playerName)//
+                .setIp(event.player.ip())//
                 .setUuid(event.player.uuid()));
 
         if (Config.isHub()) {
