@@ -11,22 +11,24 @@ public class VPNUtils {
     private static final HashSet<String> BLACK_LISTED_SUBNET = new HashSet<>();
 
     public static void init() {
-        try {
-            var response = JsonUtils.objectMapper.readTree(URI.create("https://api.github.com/meta").toURL());
+        Utils.executeExpectError(() -> {
+            try {
+                var response = JsonUtils.objectMapper.readTree(URI.create("https://api.github.com/meta").toURL());
 
-            var actions = response.withArray("actions").elements();
+                var actions = response.withArray("actions").elements();
 
-            while (actions.hasNext()) {
-                var subnet = actions.next().asText();
-                if (subnet.contains(":")) {
-                    return; // skipping IPv6
+                while (actions.hasNext()) {
+                    var subnet = actions.next().asText();
+                    if (subnet.contains(":")) {
+                        return; // skipping IPv6
+                    }
+
+                    BLACK_LISTED_SUBNET.add(subnet);
                 }
-
-                BLACK_LISTED_SUBNET.add(subnet);
+            } catch (Exception e) {
+                Log.err(e);
             }
-        } catch (Exception e) {
-            Log.err(e);
-        }
+        });
     }
 
     public static boolean isBot(Player player) {

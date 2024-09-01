@@ -14,7 +14,6 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.APIGateway;
-import mindustrytool.Config;
 import mindustrytool.messages.response.StatsMessageResponse;
 
 public class APIHandler {
@@ -36,7 +35,7 @@ public class APIHandler {
         });
 
         apiGateway.on("SERVER_LOADED", String.class, event -> {
-            event.response(Config.isLoaded);
+            event.response(true);
         });
 
         apiGateway.on("START", String.class, event -> {

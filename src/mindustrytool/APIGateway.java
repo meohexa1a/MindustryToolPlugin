@@ -29,6 +29,10 @@ public class APIGateway {
     private static final Executor executor = Executors.newFixedThreadPool(10);
 
     public <T> T execute(String method, Object data, Class<T> clazz) throws RuntimeException {
+        return execute(method, data, clazz, REQUEST_TIMEOUT);
+    }
+
+    public <T> T execute(String method, Object data, Class<T> clazz, int timeOutSeconds) throws RuntimeException {
         String id = UUID.randomUUID().toString();
 
         ServerExchange exchangeData = new ServerExchange().setData(data).setMethod(method).setId(id);
@@ -40,7 +44,7 @@ public class APIGateway {
         System.out.println(JsonUtils.toJsonString(exchangeData));
 
         try {
-            String responseString = request.get(REQUEST_TIMEOUT, TimeUnit.SECONDS);
+            String responseString = request.get(timeOutSeconds, TimeUnit.SECONDS);
 
             JsonNode node = JsonUtils.readJson(responseString);
 
