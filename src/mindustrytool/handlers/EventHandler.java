@@ -51,6 +51,11 @@ public class EventHandler {
     public Gamemode lastMode;
     public boolean inGameOverWait;
 
+    private long lastTimeGetPlayers = 0;
+    private int lastPlayers = 0;
+
+    private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
+
     public void init() {
         try {
             lastMode = Gamemode.valueOf(Core.settings.getString("lastServerMode", "survival"));
@@ -100,13 +105,16 @@ public class EventHandler {
 
                 ByteBuffer buffer = ByteBuffer.allocate(500);
 
-                int players = 0;
+                int players = lastPlayers;
 
-                try {
-                    players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
-                } catch (Exception e) {
-                    Log.err(e);
-                }
+                if (System.currentTimeMillis() - lastTimeGetPlayers > GET_PLAYERS_DURATION_GAP)
+                    try {
+                        players = MindustryToolPlugin.apiGateway.execute("PLAYERS", "", Integer.class);
+                        lastTimeGetPlayers = System.currentTimeMillis();
+                        lastPlayers = players;
+                    } catch (Exception e) {
+                        Log.err(e);
+                    }
 
                 writeString(buffer, name, 100);
                 writeString(buffer, map, 64);
