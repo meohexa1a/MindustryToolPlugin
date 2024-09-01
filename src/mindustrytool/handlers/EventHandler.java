@@ -8,6 +8,7 @@ import arc.Core;
 import arc.Events;
 import arc.graphics.Color;
 import arc.net.Server;
+import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Strings;
 import arc.util.Timer;
@@ -21,6 +22,7 @@ import mindustry.game.EventType;
 import mindustry.game.EventType.GameOverEvent;
 import mindustry.game.EventType.PlayEvent;
 import mindustry.game.EventType.PlayerChatEvent;
+import mindustry.game.EventType.PlayerConnect;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.ServerLoadEvent;
@@ -40,8 +42,11 @@ import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
+import mindustrytool.utils.VPNUtils;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
+import mindustry.net.NetConnection;
+import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 
 public class EventHandler {
@@ -76,16 +81,35 @@ public class EventHandler {
             }
         }
 
+        Vars.net.handleServer(Packets.Connect.class, (con, packet) -> {
+            Events.fire(new EventType.ConnectionEvent(con));
+            Seq<NetConnection> connections = Seq.with(Vars.net.getConnections())
+                    .select(other -> other.address.equals(con.address));
+            if (connections.size > Config.MAX_IDENTICAL_IPS) {
+                Vars.netServer.admins.blacklistDos(con.address);
+                connections.each(NetConnection::close);
+                Log.info("@ blacklisted because of ip spam", con.address);
+            }
+        });
+
         Events.on(GameOverEvent.class, this::onGameOver);
         Events.on(PlayEvent.class, this::onPlay);
         Events.on(PlayerJoin.class, this::onPlayerJoin);
         Events.on(PlayerLeave.class, this::onPlayerLeave);
         Events.on(PlayerChatEvent.class, this::onPlayerChat);
         Events.on(ServerLoadEvent.class, this::onServerLoad);
+        Events.on(PlayerConnect.class, this::onPlayerConnect);
         Events.run(EventType.Trigger.update, this::onUpdate);
 
         if (Config.isHub()) {
             setupCustomServerDiscovery();
+        }
+    }
+
+    private void onPlayerConnect(PlayerConnect event) {
+        if (VPNUtils.isBot(event.player)) {
+            event.player.kick(Packets.KickReason.typeMismatch);
+
         }
     }
 

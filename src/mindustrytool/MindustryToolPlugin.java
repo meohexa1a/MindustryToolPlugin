@@ -20,6 +20,7 @@ import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.VoteHandler;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.VPNUtils;
 
 public class MindustryToolPlugin extends Plugin {
 
@@ -83,6 +84,7 @@ public class MindustryToolPlugin extends Plugin {
         apiHandler.registerHandler(apiGateway);
 
         HudUtils.init();
+        VPNUtils.init();
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         if (Version.build == -1) {
