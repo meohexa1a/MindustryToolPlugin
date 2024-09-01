@@ -8,9 +8,11 @@ import mindustry.Vars;
 import mindustry.game.Gamemode;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
+import mindustry.gen.Player;
 import mindustry.io.MapIO;
 import mindustry.maps.Map;
 import mindustry.maps.MapException;
+import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.APIGateway;
 import mindustrytool.Config;
 import mindustrytool.messages.response.StatsMessageResponse;
@@ -85,6 +87,29 @@ public class APIHandler {
 
             event.response("STARTED");
         });
+
+        apiGateway.on("SET_ADMIN", String.class, event -> {
+            var args = event.getPayload().split(" ");
+            var uuid = args[0];
+            var add = args[1].equals("true");
+
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+            Player playert = Groups.player.find(p -> p.getInfo() == target);
+
+            if (target != null) {
+                if (add) {
+                    Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+                } else {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
+                }
+                if (playert != null)
+                    playert.admin = add;
+                Log.info("Changed admin status of player: @", target.plainLastName());
+            } else {
+                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+            }
+        });
+
     }
 
     private StatsMessageResponse getStats() {
