@@ -301,13 +301,13 @@ public class EventHandler {
                     sendServerList(player, 0);
                 }, "[red]Close")//
         );
-        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", """
-                    Command
-                    [yellow]/servers[white] to show server list
-                    [yellow]/rtv[white] to vote for changing map
-                    [yellow]/maps[white] to see map list
-                """, null, options.toArray(HudUtils.Option[]::new));
+        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null,
+                options.toArray(HudUtils.Option[]::new));
 
+        var map = Vars.state.map;
+        if (map != null) {
+            Call.label(Config.HUB_MESSAGE, 200000, map.width / 2, map.height / 2);
+        }
     }
 
     public void sendServerList(Player player, int page) {
@@ -352,9 +352,10 @@ public class EventHandler {
     public void onServerChoose(Player player, String id, String name) {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Utils.executeExpectError(() -> {
-            player.sendMessage("Starting server %s, [white]redirection will happen soon".formatted(name));
+            player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
-            player.sendMessage("Redirecting");
+            player.sendMessage("[green]Redirecting");
+            Call.sendMessage("%s [green]redirecting to server [white]%s".formatted(player.coloredName(), name));
             Call.connect(player.con, Config.SERVER_IP, data);
         });
     }
