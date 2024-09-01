@@ -13,6 +13,7 @@ import java.util.List;
 
 import arc.Events;
 import arc.util.Log;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import mindustry.game.EventType.MenuOptionChooseEvent;
@@ -28,11 +29,18 @@ public class HudUtils {
     private static final List<Player> leaved = new ArrayList<Player>();
     private static final List<Player> markForRemove = new ArrayList<Player>();
 
-    public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, PlayerPressCallback[]>> menus = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Integer, ConcurrentHashMap<String, MenuData>> menus = new ConcurrentHashMap<>();
+
+    @Data
+    @AllArgsConstructor
+    public static class MenuData {
+        PlayerPressCallback[] callbacks;
+        Object state;
+    }
 
     @FunctionalInterface
     public interface PlayerPressCallback {
-        void accept(Player player);
+        void accept(Player player, Object state);
     }
 
     @Data
@@ -64,7 +72,8 @@ public class HudUtils {
         return new Option(callback, text);
     }
 
-    public static void showFollowDisplay(Player player, int id, String title, String description, Option... options) {
+    public static void showFollowDisplay(Player player, int id, String title, String description, Object state,
+            Option... options) {
 
         var optionTexts = Arrays.asList(options).stream()//
                 .map(option -> option.text)//
@@ -75,10 +84,9 @@ public class HudUtils {
                 .toArray(PlayerPressCallback[]::new);
 
         Call.followUpMenu(player.con, id, title, description, optionTexts);
-        ConcurrentHashMap<String, PlayerPressCallback[]> userMenu = menus.computeIfAbsent(id,
-                k -> new ConcurrentHashMap<>());
+        ConcurrentHashMap<String, MenuData> userMenu = menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>());
 
-        userMenu.put(player.uuid(), callbacks);
+        userMenu.put(player.uuid(), new MenuData(callbacks, state));
     }
 
     public static void onMenuOptionChoose(MenuOptionChooseEvent event) {
@@ -89,13 +97,20 @@ public class HudUtils {
             return;
         }
 
-        var callbacks = menu.get(event.player.uuid());
+        var data = menu.get(event.player.uuid());
+
+        if (data == null) {
+            Log.info("No menu data found for player: " + event.player.uuid());
+            return;
+        }
+        var callbacks = data.getCallbacks();
+
         if (callbacks == null || event.option <= -1 || event.option >= callbacks.length) {
             Log.info("Callback not found: " + event.player.uuid());
             return;
         }
 
-        callbacks[event.option].accept(event.player);
+        callbacks[event.option].accept(event.player, data.state);
     }
 
     public static void cleanUpCallback() {

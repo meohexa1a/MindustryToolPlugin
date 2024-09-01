@@ -181,7 +181,8 @@ public class EventHandler {
     public void onUpdate() {
         Groups.player.each(p -> {
             if (p.unit().moving()) {
-                Call.effect(Effect.all.first(), p.x, p.y, 0, Color.white);
+                var effect = Effect.all.get((int) Math.random() % Effect.all.size);
+                Call.effect(effect, p.x, p.y, 0, Color.white);
             }
         });
     }
@@ -292,9 +293,10 @@ public class EventHandler {
     public void sendHub(Player player) {
 
         var options = Arrays.asList(//
-                HudUtils.option((p) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
-                HudUtils.option((p) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
-                HudUtils.option((p) -> {
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Rules"), //
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
+                HudUtils.option((p, state) -> {
                     HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
                     sendServerList(player, 0);
                 }, "[red]Close")//
@@ -304,25 +306,45 @@ public class EventHandler {
                     [yellow]/servers[white] to show server list
                     [yellow]/rtv[white] to vote for changing map
                     [yellow]/maps[white] to see map list
-                """, options.toArray(HudUtils.Option[]::new));
+                """, null, options.toArray(HudUtils.Option[]::new));
 
     }
 
     public void sendServerList(Player player, int page) {
         Utils.executeExpectError(() -> {
-            var request = new GetServersMessageRequest().setPage(page).setSize(10);
+            var size = 8;
+            var request = new GetServersMessageRequest()//
+                    .setPage(page)//
+                    .setSize(size);
 
             var response = MindustryToolPlugin.apiGateway.execute("SERVERS", request, GetServersMessageResponse.class);
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
-                    .map(server -> HudUtils.option((p) -> onServerChoose(p, server.getId(), server.getName()),
-                            "%s [cyan]Players: %s [green]Map: %s".formatted(server.getName(), server.getPlayers(),
+                    .map(server -> HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()),
+                            "%s [cyan]Players: %s [green]Map: %s".formatted(//
+                                    server.getName(), //
+                                    server.getPlayers(),
                                     server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//
                     .toList());
 
-            options.add(HudUtils.option((p) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
+            if (page > 0) {
+                options.add(HudUtils.option((p, state) -> {
+                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                    sendServerList(player, (int) state - 1);
+                }, "[yellow]Previous"));
+            }
 
-            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "",
+            if (servers.size() == size) {
+                options.add(HudUtils.option((p, state) -> {
+                    HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI);
+                    sendServerList(player, (int) state + 1);
+                }, "[green]Next"));
+
+            }
+            options.add(
+                    HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
+
+            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page),
                     options.toArray(HudUtils.Option[]::new));
         });
     }
