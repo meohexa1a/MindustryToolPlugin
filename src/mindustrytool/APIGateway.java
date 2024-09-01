@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -23,6 +25,8 @@ public class APIGateway {
     private ConcurrentHashMap<String, ServerMessageHandler<?>> handlers = new ConcurrentHashMap<>();
 
     private static final int REQUEST_TIMEOUT = 20;
+
+    private static final Executor executor = Executors.newFixedThreadPool(10);
 
     public <T> T execute(String method, Object data, Class<T> clazz) throws RuntimeException {
         String id = UUID.randomUUID().toString();
@@ -66,29 +70,31 @@ public class APIGateway {
     public void handleMessage(String input) throws JsonParseException, JsonMappingException, IOException {
         JsonNode node = JsonUtils.readJson(input);
 
-        String id = node.get("id").asText();
-        Boolean isRequest = node.get("request").asBoolean();
+        executor.execute(() -> {
+            String id = node.get("id").asText();
+            Boolean isRequest = node.get("request").asBoolean();
 
-        if (isRequest) {
-            String method = node.get("method").asText();
-            ServerMessageHandler<?> handler = handlers.get(method);
+            if (isRequest) {
+                String method = node.get("method").asText();
+                ServerMessageHandler<?> handler = handlers.get(method);
 
-            if (handler == null) {
-                throw new IllegalStateException("No handler for method " + method);
+                if (handler == null) {
+                    throw new IllegalStateException("No handler for method " + method);
+                }
+
+                Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
+                var event = new ServerMessageEvent(id, method, data);
+
+                handler.apply(event);
+            } else {
+
+                var request = requests.get(id);
+
+                if (request != null) {
+                    request.complete(input);
+                }
             }
-
-            Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
-            var event = new ServerMessageEvent(id, method, data);
-
-            handler.apply(event);
-        } else {
-
-            var request = requests.get(id);
-
-            if (request != null) {
-                request.complete(input);
-            }
-        }
+        });
     }
 
     public <T> void on(String method, Class<T> clazz, Cons<ServerMessageEvent<T>> event) {
