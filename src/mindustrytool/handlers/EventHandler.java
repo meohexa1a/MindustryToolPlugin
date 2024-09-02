@@ -251,7 +251,29 @@ public class EventHandler {
             }
         }
 
-        event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
+        var name = playerData.getName();
+        var uuid = playerData.getUuid();
+        var isAdmin = playerData.isAdmin();
+
+        PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+        Player playert = Groups.player.find(p -> p.getInfo() == target);
+
+        if (target != null) {
+            if (isAdmin) {
+                Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+            } else {
+                Vars.netServer.admins.unAdminPlayer(target.id);
+            }
+            if (playert != null)
+                playert.admin = isAdmin;
+            Log.info("Changed admin status of player: @", target.plainLastName());
+        } else {
+            Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+        }
+
+        if (name != null && !name.isEmpty()){
+            player.name(name);
+        }
     }
 
     public void onPlay(PlayEvent event) {
@@ -308,25 +330,8 @@ public class EventHandler {
     }
 
     public void sendHub(Player player, SetPlayerMessageRequest playerData) {
-        var uuid = playerData.getUuid();
-        var isAdmin = playerData.isAdmin();
         var loginLink = playerData.getLoginLink();
 
-        PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-        Player playert = Groups.player.find(p -> p.getInfo() == target);
-
-        if (target != null) {
-            if (isAdmin) {
-                Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
-            } else {
-                Vars.netServer.admins.unAdminPlayer(target.id);
-            }
-            if (playert != null)
-                playert.admin = isAdmin;
-            Log.info("Changed admin status of player: @", target.plainLastName());
-        } else {
-            Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
-        }
         var options = new ArrayList<Option>();
 
         if (loginLink != null && !loginLink.isEmpty()) {
