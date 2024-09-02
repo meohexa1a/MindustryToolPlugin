@@ -225,20 +225,18 @@ public class EventHandler {
         if (Vars.state.isPaused()) {
             Vars.state.set(State.playing);
         }
+
         var player = event.player;
         String playerName = player != null ? player.plainName() : "Unknown";
         String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
-
-        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-        MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", new PlayerMessageRequest()//
-                .setName(playerName)//
-                .setIp(player.ip())//
-                .setUuid(player.uuid()));
 
         var request = new PlayerMessageRequest()//
                 .setName(player.coloredName())//
                 .setIp(player.ip())//
                 .setUuid(player.uuid());
+
+        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+        MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", request);
 
         var playerData = MindustryToolPlugin.apiGateway.execute("GET_PLAYER_DATA", request,
                 SetPlayerMessageRequest.class);
@@ -248,6 +246,8 @@ public class EventHandler {
         } else {
             if (playerData.getLoginLink() != null) {
                 player.sendMessage("[green]Login successfully");
+            } else {
+
             }
         }
 
@@ -271,7 +271,7 @@ public class EventHandler {
             Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
         }
 
-        if (name != null && !name.isEmpty()){
+        if (name != null && !name.isEmpty()) {
             player.name(name);
         }
     }
