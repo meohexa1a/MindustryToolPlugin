@@ -9,4 +9,5 @@ public class SetPlayerMessageRequest {
     String uuid;
     boolean admin;
     String name;
+    String loginLink;
 }

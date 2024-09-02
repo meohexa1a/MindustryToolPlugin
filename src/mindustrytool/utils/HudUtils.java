@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import arc.Events;
@@ -24,6 +23,7 @@ public class HudUtils {
 
     public static final int HUB_UI = 1;
     public static final int SERVERS_UI = 2;
+    public static final int LOGIN_UI = 3;
 
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private static final List<Player> leaved = new ArrayList<Player>();
@@ -73,13 +73,13 @@ public class HudUtils {
     }
 
     public static void showFollowDisplay(Player player, int id, String title, String description, Object state,
-            Option... options) {
+            List<Option> options) {
 
-        var optionTexts = Arrays.asList(options).stream()//
+        var optionTexts = options.stream()//
                 .map(option -> option.text)//
                 .toArray(String[][]::new);
 
-        var callbacks = Arrays.asList(options).stream()//
+        var callbacks = options.stream()//
                 .map(option -> option.callback)//
                 .toArray(PlayerPressCallback[]::new);
 

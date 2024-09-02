@@ -303,8 +303,7 @@ public class EventHandler {
                     sendServerList(player, 0);
                 }, "[red]Close")//
         );
-        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null,
-                options.toArray(HudUtils.Option[]::new));
+        HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
 
         var map = Vars.state.map;
         if (map != null) {
@@ -346,8 +345,7 @@ public class EventHandler {
             options.add(
                     HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.SERVERS_UI), "[red]Close"));
 
-            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page),
-                    options.toArray(HudUtils.Option[]::new));
+            HudUtils.showFollowDisplay(player, HudUtils.SERVERS_UI, "Servers", "", Integer.valueOf(page), options);
         });
     }
 

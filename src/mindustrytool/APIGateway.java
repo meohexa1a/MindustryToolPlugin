@@ -97,6 +97,8 @@ public class APIGateway {
 
                     if (request != null) {
                         request.complete(input);
+                    } else {
+                        throw new IllegalStateException("No request found for id " + id);
                     }
                 }
             } catch (Exception e) {

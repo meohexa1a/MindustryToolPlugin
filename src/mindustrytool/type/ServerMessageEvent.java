@@ -23,7 +23,11 @@ public class ServerMessageEvent<T> {
     }
 
     public void response(Object data) {
-        var message = new ServerExchange().response().setData(data).setId(id);
+        var message = new ServerExchange()//
+                .response()//
+                .setData(data)//
+                .setMethod(method)//
+                .setId(id);
 
         System.out.println(JsonUtils.toJsonString(message));
     }
