@@ -115,7 +115,9 @@ public class APIHandler {
             if (loginLink != null && !loginLink.isEmpty()) {
                 var options = List.of(//
                         HudUtils.option((player, state) -> Call.openURI(player.con, loginLink), "[green]Login"),
-                        HudUtils.option((p, state) -> HudUtils.closeFollowDisplay(p, HudUtils.LOGIN_UI), "[red]Close"));
+                        HudUtils.option((player, state) -> HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI),
+                                "[red]Close"));
+
                 HudUtils.showFollowDisplay(playert, HudUtils.LOGIN_UI, "[green]Login", "", null, options);
             } else {
                 HudUtils.closeFollowDisplay(playert, HudUtils.LOGIN_UI);
