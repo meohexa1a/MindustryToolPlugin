@@ -82,7 +82,7 @@ public class HudUtils {
                 .map(option -> option.callback)//
                 .toArray(PlayerPressCallback[]::new);
 
-        Call.followUpMenu(player.con, id, title, description, optionTexts);
+        Call.menu(player.con, id, title, description, optionTexts);
         ConcurrentHashMap<String, MenuData> userMenu = menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>());
 
         userMenu.put(player.uuid(), new MenuData(callbacks, state));
