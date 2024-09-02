@@ -242,7 +242,7 @@ public class EventHandler {
                 SetPlayerMessageRequest.class);
 
         if (Config.isHub()) {
-            sendHub(event.player, playerData);
+            sendHub(event.player, playerData.getLoginLink());
         } else {
             if (playerData.getLoginLink() != null) {
                 player.sendMessage("[green]Login successfully");
@@ -329,9 +329,7 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
     }
 
-    public void sendHub(Player player, SetPlayerMessageRequest playerData) {
-        var loginLink = playerData.getLoginLink();
-
+    public void sendHub(Player player, String loginLink) {
         var options = new ArrayList<Option>();
 
         if (loginLink != null && !loginLink.isEmpty()) {
