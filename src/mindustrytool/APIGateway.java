@@ -51,8 +51,6 @@ public class APIGateway {
             return JsonUtils.readJsonAsClass(node.get("data").toString(), clazz);
 
         } catch (Exception e) {
-            Log.err(exchangeData.toString(), e);
-
             throw new RuntimeException(exchangeData.toString(), e);
         } finally {
             requests.remove(id);

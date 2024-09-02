@@ -113,9 +113,9 @@ public class MindustryToolPlugin extends Plugin {
             }
 
             if (closest != null && !closest.text.equals("yes")) {
-                Log.err("Command not found. Did you mean \"" + closest.text + "\"?");
+                Log.err(line + " Command not found. Did you mean \"" + closest.text + "\"?");
             } else {
-                Log.err("Invalid command. Type 'help' for help.");
+                Log.err(line + " Invalid command. Type 'help' for help.");
             }
         } else if (response.type == ResponseType.fewArguments) {
             Log.err("Too few command arguments. Usage: " + response.command.text + " " + response.command.paramText);
