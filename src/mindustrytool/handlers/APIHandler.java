@@ -15,6 +15,7 @@ import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.APIGateway;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
+import mindustrytool.messages.request.StartServerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
 import mindustrytool.utils.HudUtils;
 
@@ -40,11 +41,10 @@ public class APIHandler {
             event.response(true);
         });
 
-        apiGateway.on("START", String.class, event -> {
-            String[] data = event.getPayload().split(" ");
+        apiGateway.on("START", StartServerMessageRequest.class, event -> {
 
-            String mapName = data[0];
-            String gameMode = data[1];
+            String mapName = event.getPayload().getMapName();
+            String gameMode = event.getPayload().getMode();
 
             if (Vars.state.isGame()) {
                 Log.err("Already hosting. Type 'stop' to stop hosting first.");
@@ -104,7 +104,6 @@ public class APIHandler {
                 }
                 if (playert != null)
                     playert.admin = isAdmin;
-                Log.info("Changed admin status of player: @", target.plainLastName());
             } else {
                 Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
             }

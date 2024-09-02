@@ -266,7 +266,6 @@ public class EventHandler {
             }
             if (playert != null)
                 playert.admin = isAdmin;
-            Log.info("Changed admin status of player: @", target.plainLastName());
         } else {
             Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
         }

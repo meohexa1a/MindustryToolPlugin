@@ -597,7 +597,6 @@ public class ServerCommandHandler {
                 }
                 if (playert != null)
                     playert.admin = add;
-                Log.info("Changed admin status of player: @", target.plainLastName());
             } else {
                 Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
             }
