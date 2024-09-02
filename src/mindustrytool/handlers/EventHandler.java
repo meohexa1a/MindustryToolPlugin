@@ -335,8 +335,11 @@ public class EventHandler {
         var options = new ArrayList<Option>();
 
         if (loginLink != null && !loginLink.isEmpty()) {
-            options.add(HudUtils.option((trigger, state) -> Call.openURI(trigger.con, loginLink),
-                    "[green]Login via MindustryTool"));
+            options.add(HudUtils.option((trigger, state) -> {
+                Call.openURI(trigger.con, loginLink);
+                HudUtils.closeFollowDisplay(trigger, HudUtils.HUB_UI);
+
+            }, "[green]Login via MindustryTool"));
         } else {
             player.sendMessage("[green]Logged in successfully");
         }
