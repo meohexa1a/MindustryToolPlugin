@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import arc.func.Cons;
 import arc.util.Log;
 import mindustrytool.handlers.ServerMessageHandler;
+import mindustrytool.messages.NotMessageException;
 import mindustrytool.type.ServerExchange;
 import mindustrytool.type.ServerMessageEvent;
 import mindustrytool.utils.JsonUtils;
@@ -24,7 +25,7 @@ public class APIGateway {
     private ConcurrentHashMap<String, CompletableFuture<String>> requests = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ServerMessageHandler<?>> handlers = new ConcurrentHashMap<>();
 
-    private static final int REQUEST_TIMEOUT = 20;
+    private static final int REQUEST_TIMEOUT = 30;
 
     private static final Executor executor = Executors.newFixedThreadPool(10);
 
@@ -73,6 +74,10 @@ public class APIGateway {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void handleMessage(String input) throws JsonParseException, JsonMappingException, IOException {
         JsonNode node = JsonUtils.readJson(input);
+
+        if (!node.hasNonNull("id") || !node.hasNonNull("request") || !node.hasNonNull("method")) {
+            throw new NotMessageException();
+        }
 
         executor.execute(() -> {
             try {

@@ -1,7 +1,5 @@
 package mindustrytool.handlers;
 
-import java.util.List;
-
 import arc.Core;
 import arc.files.Fi;
 import arc.util.Log;
@@ -94,7 +92,6 @@ public class APIHandler {
         apiGateway.on("SET_PLAYER", SetPlayerMessageRequest.class, event -> {
             var uuid = event.getPayload().getUuid();
             var isAdmin = event.getPayload().isAdmin();
-            var loginLink = event.getPayload().getLoginLink();
 
             PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
             Player playert = Groups.player.find(p -> p.getInfo() == target);
@@ -112,19 +109,9 @@ public class APIHandler {
                 Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
             }
 
-            if (loginLink != null && !loginLink.isEmpty()) {
-                var options = List.of(//
-                        HudUtils.option((player, state) -> Call.openURI(player.con, loginLink), "[green]Login"),
-                        HudUtils.option((player, state) -> HudUtils.closeFollowDisplay(player, HudUtils.LOGIN_UI),
-                                "[red]Close"));
-
-                HudUtils.showFollowDisplay(playert, HudUtils.LOGIN_UI, "[green]Login", "", null, options);
-            } else {
-                HudUtils.closeFollowDisplay(playert, HudUtils.LOGIN_UI);
-                playert.sendMessage("[green]Logged in successfully");
-            }
+            HudUtils.closeFollowDisplay(playert, HudUtils.LOGIN_UI);
+            playert.sendMessage("[green]Logged in successfully");
         });
-
     }
 
     private StatsMessageResponse getStats() {

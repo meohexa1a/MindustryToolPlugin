@@ -19,6 +19,7 @@ import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
 import mindustrytool.handlers.VoteHandler;
+import mindustrytool.messages.NotMessageException;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.VPNUtils;
 
@@ -62,6 +63,7 @@ public class MindustryToolPlugin extends Plugin {
                     try {
                         apiGateway.handleMessage(line);
                     } catch (NotJsonException ignored) {
+                    } catch (NotMessageException ignored) {
                         handleCommandString(line);
                     } catch (Exception e) {
                         e.printStackTrace();

@@ -60,7 +60,6 @@ public class HudUtils {
     }
 
     private static void onPlayerJoin(PlayerJoin event) {
-        leaved.removeIf(p -> p.uuid().equals(event.player.uuid()));
         markForRemove.removeIf(p -> p.uuid().equals(event.player.uuid()));
     }
 
@@ -133,6 +132,5 @@ public class HudUtils {
 
     public static void closeFollowDisplay(Player player, int id) {
         Call.hideFollowUpMenu(player.con, id);
-        menus.computeIfAbsent(id, k -> new ConcurrentHashMap<>()).remove(player.uuid());
     }
 }

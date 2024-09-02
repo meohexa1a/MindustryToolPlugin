@@ -39,10 +39,13 @@ import mindustrytool.Config;
 import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.request.PlayerMessageRequest;
+import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.utils.VPNUtils;
+import mindustrytool.utils.HudUtils.Option;
+import mindustry.net.Administration.PlayerInfo;
 import mindustry.net.ArcNetProvider;
 import mindustry.net.Net;
 import mindustry.net.NetConnection;
@@ -222,18 +225,30 @@ public class EventHandler {
         if (Vars.state.isPaused()) {
             Vars.state.set(State.playing);
         }
-
-        String playerName = event.player != null ? event.player.plainName() : "Unknown";
+        var player = event.player;
+        String playerName = player != null ? player.plainName() : "Unknown";
         String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
         MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", new PlayerMessageRequest()//
                 .setName(playerName)//
-                .setIp(event.player.ip())//
-                .setUuid(event.player.uuid()));
+                .setIp(player.ip())//
+                .setUuid(player.uuid()));
+
+        var request = new PlayerMessageRequest()//
+                .setName(player.coloredName())//
+                .setIp(player.ip())//
+                .setUuid(player.uuid());
+
+        var playerData = MindustryToolPlugin.apiGateway.execute("GET_PLAYER_DATA", request,
+                SetPlayerMessageRequest.class);
 
         if (Config.isHub()) {
-            sendHub(event.player);
+            sendHub(event.player, playerData);
+        } else {
+            if (playerData.getLoginLink() != null) {
+                player.sendMessage("[green]Login successfully");
+            }
         }
 
         event.player.sendMessage("Server discord: https://discord.gg/72324gpuCd");
@@ -292,17 +307,45 @@ public class EventHandler {
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", message);
     }
 
-    public void sendHub(Player player) {
+    public void sendHub(Player player, SetPlayerMessageRequest playerData) {
+        var uuid = playerData.getUuid();
+        var isAdmin = playerData.isAdmin();
+        var loginLink = playerData.getLoginLink();
 
-        var options = Arrays.asList(//
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"), //
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"), //
-                HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"), //
-                HudUtils.option((p, state) -> {
-                    HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
-                    sendServerList(player, 0);
-                }, "[red]Close")//
-        );
+        PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+        Player playert = Groups.player.find(p -> p.getInfo() == target);
+
+        if (target != null) {
+            if (isAdmin) {
+                Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+            } else {
+                Vars.netServer.admins.unAdminPlayer(target.id);
+            }
+            if (playert != null)
+                playert.admin = isAdmin;
+            Log.info("Changed admin status of player: @", target.plainLastName());
+        } else {
+            Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+        }
+        var options = new ArrayList<Option>();
+
+        if (loginLink != null && !loginLink.isEmpty()) {
+            options.add(HudUtils.option((trigger, state) -> Call.openURI(trigger.con, loginLink),
+                    "[green]Login via MindustryTool"));
+        } else {
+            player.sendMessage("[green]Logged in successfully");
+        }
+
+        options.add(HudUtils.option((p, state) -> Call.openURI(player.con, Config.RULE_URL), "[green]Rules"));
+        options.add(
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.MINDUSTRY_TOOL_URL), "[green]Website"));
+        options.add(
+                HudUtils.option((p, state) -> Call.openURI(player.con, Config.DISCORD_INVITE_URL), "[blue]Discord"));
+        options.add(HudUtils.option((p, state) -> {
+            HudUtils.closeFollowDisplay(p, HudUtils.HUB_UI);
+            sendServerList(player, 0);
+        }, "[red]Close"));
+
         HudUtils.showFollowDisplay(player, HudUtils.HUB_UI, "Servers", Config.HUB_MESSAGE, null, options);
 
         var map = Vars.state.map;
