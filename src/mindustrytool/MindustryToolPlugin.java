@@ -60,6 +60,9 @@ public class MindustryToolPlugin extends Plugin {
             String line;
             try {
                 while ((line = reader.readLine()) != null) {
+                    if (line.isBlank())
+                        continue;
+
                     try {
                         apiGateway.handleMessage(line);
                     } catch (NotJsonException ignored) {

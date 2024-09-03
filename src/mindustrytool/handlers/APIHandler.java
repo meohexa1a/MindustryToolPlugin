@@ -92,6 +92,7 @@ public class APIHandler {
         apiGateway.on("SET_PLAYER", SetPlayerMessageRequest.class, event -> {
             var uuid = event.getPayload().getUuid();
             var isAdmin = event.getPayload().isAdmin();
+            var name = event.getPayload().getName();
 
             PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
             Player playert = Groups.player.find(p -> p.getInfo() == target);
@@ -109,7 +110,12 @@ public class APIHandler {
             }
 
             HudUtils.closeFollowDisplay(playert, HudUtils.LOGIN_UI);
+
             playert.sendMessage("[green]Logged in successfully");
+
+            if (name != null && !name.isEmpty()) {
+                playert.name(name);
+            }
         });
     }
 
