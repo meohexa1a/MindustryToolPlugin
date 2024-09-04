@@ -156,9 +156,17 @@ public class EventHandler {
     }
 
     private void onPlayerConnect(PlayerConnect event) {
-        if (VPNUtils.isBot(event.player)) {
-            event.player.kick(Packets.KickReason.typeMismatch);
+        var player = event.player;
 
+        for (int i = 0; i < player.name().length(); i++) {
+            char ch = player.name().charAt(i);
+            if (ch <= '\u001f') {
+                player.kick("Invalid name");
+            }
+        }
+
+        if (VPNUtils.isBot(player)) {
+            player.kick(Packets.KickReason.typeMismatch);
         }
     }
 

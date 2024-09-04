@@ -34,13 +34,6 @@ public class VPNUtils {
     public static boolean isBot(Player player) {
         var ip = player.ip();
 
-        for (int i = 0; i < player.name().length(); i++) {
-            char ch = player.name().charAt(i);
-            if (ch <= '\u001f') {
-                return true;
-            }
-        }
-
         // TODO: Api endpoint for this
         if (isVpnIp(ip)) {
             return true;
