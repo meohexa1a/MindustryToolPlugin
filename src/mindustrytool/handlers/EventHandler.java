@@ -146,7 +146,7 @@ public class EventHandler {
         if (!newName.equals(player.name)) {
             var hasLevelInName = player.name.matches("\\[\\d+\\]");
 
-            setName(player, newName, level);
+            player.name(newName);
 
             if (hasLevelInName)
                 player.sendMessage("You have leveled up to level %s".formatted(level));
