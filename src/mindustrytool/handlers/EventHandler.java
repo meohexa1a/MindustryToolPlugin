@@ -236,10 +236,8 @@ public class EventHandler {
                 .setUuid(player.uuid());
 
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-        MindustryToolPlugin.apiGateway.emit("PLAYER_JOIN", request);
 
-        var playerData = MindustryToolPlugin.apiGateway.execute("GET_PLAYER_DATA", request,
-                SetPlayerMessageRequest.class);
+        var playerData = MindustryToolPlugin.apiGateway.execute("PLAYER_JOIN", request, SetPlayerMessageRequest.class);
 
         if (Config.isHub()) {
             sendHub(event.player, playerData.getLoginLink());
