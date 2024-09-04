@@ -14,6 +14,8 @@ import arc.util.Strings;
 import arc.util.Timer;
 import arc.util.Timer.Task;
 import arc.util.serialization.JsonValue;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import mindustry.Vars;
 import mindustry.core.GameState.State;
 import mindustry.core.Version;
@@ -52,6 +54,13 @@ import mindustry.net.NetConnection;
 import mindustry.net.Packets;
 import mindustry.net.WorldReloader;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.time.Duration;
+
 public class EventHandler {
 
     public Task lastTask;
@@ -63,6 +72,17 @@ public class EventHandler {
     private int lastPlayers = 0;
 
     private static final long GET_PLAYERS_DURATION_GAP = 1000 * 30;
+    public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+    @Data
+    @Accessors(chain = true)
+    public static class PlayerMetaData {
+        Player player;
+        long exp;
+        String name;
+        Instant createdAt = Instant.now();
+    }
 
     public void init() {
         try {
@@ -70,6 +90,8 @@ public class EventHandler {
         } catch (Exception e) { // handle enum parse exception
             lastMode = Gamemode.survival;
         }
+
+        executor.schedule(this::updatePlayerLevels, 0, TimeUnit.SECONDS);
 
         if (!Vars.mods.orderedMods().isEmpty()) {
             Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
@@ -107,6 +129,28 @@ public class EventHandler {
         if (Config.isHub()) {
             setupCustomServerDiscovery();
         }
+    }
+
+    private void updatePlayerLevels() {
+        playerMeta.values().forEach(meta -> {
+            var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
+            var level = (int) Math.sqrt(exp);
+
+            var newName = "[%s] %s".formatted(level, meta.name);
+
+            if (newName.equals(meta.player.name)) {
+                var hasLevelInName = meta.player.name.matches("\\[\\d+\\]");
+
+                setName(meta.player, newName, level);
+
+                if (hasLevelInName)
+                    meta.player.sendMessage("You have leveled up to level %s".formatted(level));
+            }
+        });
+    }
+
+    private void setName(Player player, String name, int level) {
+        player.name("[%s] %s".formatted(level, name));
     }
 
     private void onPlayerConnect(PlayerConnect event) {
@@ -214,6 +258,8 @@ public class EventHandler {
         String playerName = event.player != null ? event.player.plainName() : "Unknown";
         String chat = Strings.format("@ leaved the server, current players: @", playerName, Groups.player.size() - 1);
 
+        playerMeta.remove(event.player.uuid());
+
         MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
         MindustryToolPlugin.apiGateway.emit("PLAYER_LEAVE", new PlayerMessageRequest()//
                 .setName(playerName)//
@@ -249,9 +295,10 @@ public class EventHandler {
             }
         }
 
-        var name = playerData.getName();
         var uuid = playerData.getUuid();
         var isAdmin = playerData.isAdmin();
+
+        addPlayer(playerData, player);
 
         PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
         Player playert = Groups.player.find(p -> p.getInfo() == target);
@@ -267,10 +314,14 @@ public class EventHandler {
         } else {
             Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
         }
+    }
 
-        if (name != null && !name.isEmpty()) {
-            player.name(name);
-        }
+    public void addPlayer(SetPlayerMessageRequest playerData, Player player) {
+        var uuid = playerData.getUuid();
+        var exp = playerData.getExp();
+        var name = playerData.getName();
+
+        playerMeta.put(uuid, new PlayerMetaData().setExp(exp).setPlayer(player).setName(name));
     }
 
     public void onPlay(PlayEvent event) {

@@ -14,6 +14,7 @@ import mindustry.maps.Map;
 import mindustry.maps.MapException;
 import mindustry.net.Administration.PlayerInfo;
 import mindustrytool.APIGateway;
+import mindustrytool.MindustryToolPlugin;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.request.StartServerMessageRequest;
 import mindustrytool.messages.response.StatsMessageResponse;
@@ -112,6 +113,8 @@ public class APIHandler {
             HudUtils.closeFollowDisplay(playert, HudUtils.LOGIN_UI);
 
             playert.sendMessage("[green]Logged in successfully");
+
+            MindustryToolPlugin.eventHandler.addPlayer(event.getPayload(), playert);
 
             if (name != null && !name.isEmpty()) {
                 playert.name(name);

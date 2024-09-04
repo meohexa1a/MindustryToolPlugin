@@ -10,4 +10,5 @@ public class SetPlayerMessageRequest {
     boolean admin;
     String name;
     String loginLink;
+    long exp;
 }
