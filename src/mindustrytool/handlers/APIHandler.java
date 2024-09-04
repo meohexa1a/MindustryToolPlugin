@@ -95,7 +95,6 @@ public class APIHandler {
         apiGateway.on("SET_PLAYER", SetPlayerMessageRequest.class, event -> {
             var uuid = event.getPayload().getUuid();
             var isAdmin = event.getPayload().isAdmin();
-            var name = event.getPayload().getName();
 
             PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
             Player playert = Groups.player.find(p -> p.getInfo() == target);

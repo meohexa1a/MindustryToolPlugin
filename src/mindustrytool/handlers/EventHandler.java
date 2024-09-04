@@ -135,7 +135,7 @@ public class EventHandler {
     private void updatePlayerLevels() {
         playerMeta.values().forEach(meta -> {
             if (meta.isLoggedIn == false)
-            return;
+                return;
 
             var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
             var level = (int) Math.sqrt(exp);
@@ -353,7 +353,9 @@ public class EventHandler {
                 .setLoggedIn(isLoggedIn)//
                 .setName(name));
 
-        setName(player, name, (int) Math.sqrt(exp));
+        if (isLoggedIn) {
+            setName(player, name, (int) Math.sqrt(exp));
+        }
     }
 
     public void onPlay(PlayEvent event) {
