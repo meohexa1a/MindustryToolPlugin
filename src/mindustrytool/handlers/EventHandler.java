@@ -81,6 +81,7 @@ public class EventHandler {
         Player player;
         long exp;
         String name;
+        boolean isLoggedIn;
         Instant createdAt = Instant.now();
     }
 
@@ -133,6 +134,9 @@ public class EventHandler {
 
     private void updatePlayerLevels() {
         playerMeta.values().forEach(meta -> {
+            if (meta.isLoggedIn == false)
+                return;
+
             var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
             var level = (int) Math.sqrt(exp);
 
@@ -341,10 +345,12 @@ public class EventHandler {
         var uuid = playerData.getUuid();
         var exp = playerData.getExp();
         var name = playerData.getName();
+        var isLoggedIn = playerData.getLoginLink() == null;
 
         playerMeta.put(uuid, new PlayerMetaData()//
                 .setExp(exp)//
                 .setPlayer(player)//
+                .setLoggedIn(isLoggedIn)//
                 .setName(name));
 
         setName(player, name, (int) Math.sqrt(exp));

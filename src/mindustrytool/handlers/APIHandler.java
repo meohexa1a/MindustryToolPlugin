@@ -117,10 +117,6 @@ public class APIHandler {
             playert.sendMessage("[green]Logged in successfully");
 
             MindustryToolPlugin.eventHandler.addPlayer(event.getPayload(), playert);
-
-            if (name != null && !name.isEmpty()) {
-                playert.name(name);
-            }
         });
     }
 
