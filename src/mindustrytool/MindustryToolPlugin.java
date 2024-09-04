@@ -13,7 +13,6 @@ import mindustry.core.Version;
 import mindustry.maps.Maps.ShuffleMode;
 import mindustry.mod.*;
 import mindustry.net.Administration.Config;
-import mindustrytool.error.NotJsonException;
 import mindustrytool.handlers.APIHandler;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
@@ -65,7 +64,6 @@ public class MindustryToolPlugin extends Plugin {
 
                     try {
                         apiGateway.handleMessage(line);
-                    } catch (NotJsonException ignored) {
                     } catch (NotMessageException ignored) {
                         handleCommandString(line);
                     } catch (Exception e) {
@@ -116,9 +114,9 @@ public class MindustryToolPlugin extends Plugin {
             }
 
             if (closest != null && !closest.text.equals("yes")) {
-                Log.err(line + " Command not found. Did you mean \"" + closest.text + "\"?");
+                Log.err("<" + line + ">Command not found. Did you mean \"" + closest.text + "\"?");
             } else {
-                Log.err(line + " Invalid command. Type 'help' for help.");
+                Log.err("<" + line + ">Invalid command. Type 'help' for help.");
             }
         } else if (response.type == ResponseType.fewArguments) {
             Log.err("Too few command arguments. Usage: " + response.command.text + " " + response.command.paramText);

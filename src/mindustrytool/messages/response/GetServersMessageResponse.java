@@ -20,5 +20,6 @@ public class GetServersMessageResponse {
         private int port;
         private int players;
         private String mapName;
+        private List<String> mods;
     }
 }

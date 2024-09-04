@@ -1,5 +1,7 @@
 package mindustrytool.messages.response;
 
+import java.util.List;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -11,4 +13,5 @@ public class StatsMessageResponse {
     public int players;
     public String mapName;
     public byte[] mapData;
+    public List<String> mods;
 }

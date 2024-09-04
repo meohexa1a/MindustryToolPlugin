@@ -127,7 +127,7 @@ public class EventHandler {
         Events.run(EventType.Trigger.update, this::onUpdate);
 
         if (Config.isHub()) {
-            setupCustomServerDiscovery();
+            executor.execute(() -> setupCustomServerDiscovery());
         }
     }
 
@@ -156,18 +156,20 @@ public class EventHandler {
     }
 
     private void onPlayerConnect(PlayerConnect event) {
-        var player = event.player;
+        executor.submit(() -> {
+            var player = event.player;
 
-        for (int i = 0; i < player.name().length(); i++) {
-            char ch = player.name().charAt(i);
-            if (ch <= '\u001f') {
-                player.kick("Invalid name");
+            for (int i = 0; i < player.name().length(); i++) {
+                char ch = player.name().charAt(i);
+                if (ch <= '\u001f') {
+                    player.kick("Invalid name");
+                }
             }
-        }
 
-        if (VPNUtils.isBot(player)) {
-            player.kick(Packets.KickReason.typeMismatch);
-        }
+            if (VPNUtils.isBot(player)) {
+                player.kick(Packets.KickReason.typeMismatch);
+            }
+        });
     }
 
     private void setupCustomServerDiscovery() {
@@ -249,81 +251,90 @@ public class EventHandler {
     }
 
     public void onPlayerChat(PlayerChatEvent event) {
-        Player player = event.player;
-        String message = event.message;
+        executor.execute(() -> {
+            Player player = event.player;
+            String message = event.message;
 
-        String chat = Strings.format("[@] => @", player.plainName(), message);
+            String chat = Strings.format("[@] => @", player.plainName(), message);
 
-        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+        });
     }
 
     public void onPlayerLeave(PlayerLeave event) {
-        if (!Vars.state.isPaused() && Groups.player.size() == 1) {
-            Vars.state.set(State.paused);
-        }
+        executor.execute(() -> {
+            if (!Vars.state.isPaused() && Groups.player.size() == 1) {
+                Vars.state.set(State.paused);
+            }
 
-        Player player = event.player;
-        MindustryToolPlugin.voteHandler.removeVote(player);
+            Player player = event.player;
+            MindustryToolPlugin.voteHandler.removeVote(player);
 
-        String playerName = event.player != null ? event.player.plainName() : "Unknown";
-        String chat = Strings.format("@ leaved the server, current players: @", playerName, Groups.player.size() - 1);
+            String playerName = event.player != null ? event.player.plainName() : "Unknown";
+            String chat = Strings.format("@ leaved the server, current players: @", playerName,
+                    Groups.player.size() - 1);
 
-        playerMeta.remove(event.player.uuid());
+            playerMeta.remove(event.player.uuid());
 
-        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-        MindustryToolPlugin.apiGateway.emit("PLAYER_LEAVE", new PlayerMessageRequest()//
-                .setName(playerName)//
-                .setIp(event.player.ip())//
-                .setUuid(event.player.uuid()));
+            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
+            MindustryToolPlugin.apiGateway.emit("PLAYER_LEAVE", new PlayerMessageRequest()//
+                    .setName(playerName)//
+                    .setIp(event.player.ip())//
+                    .setUuid(event.player.uuid()));
+        });
     }
 
     public void onPlayerJoin(PlayerJoin event) {
-        if (Vars.state.isPaused()) {
-            Vars.state.set(State.playing);
-        }
+        executor.execute(() -> {
 
-        var player = event.player;
-        String playerName = player != null ? player.plainName() : "Unknown";
-        String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
-
-        var request = new PlayerMessageRequest()//
-                .setName(player.coloredName())//
-                .setIp(player.ip())//
-                .setUuid(player.uuid());
-
-        MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
-
-        var playerData = MindustryToolPlugin.apiGateway.execute("PLAYER_JOIN", request, SetPlayerMessageRequest.class);
-
-        if (Config.isHub()) {
-            sendHub(event.player, playerData.getLoginLink());
-        } else {
-            if (playerData.getLoginLink() != null) {
-                player.sendMessage("[green]Logged in successfully");
-            } else {
-
+            if (Vars.state.isPaused()) {
+                Vars.state.set(State.playing);
             }
-        }
 
-        var uuid = playerData.getUuid();
-        var isAdmin = playerData.isAdmin();
+            var player = event.player;
+            String playerName = player != null ? player.plainName() : "Unknown";
+            String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
-        addPlayer(playerData, player);
+            var request = new PlayerMessageRequest()//
+                    .setName(player.coloredName())//
+                    .setIp(player.ip())//
+                    .setUuid(player.uuid());
 
-        PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
-        Player playert = Groups.player.find(p -> p.getInfo() == target);
+            MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
 
-        if (target != null) {
-            if (isAdmin) {
-                Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+            var playerData = MindustryToolPlugin.apiGateway.execute("PLAYER_JOIN", request,
+                    SetPlayerMessageRequest.class);
+
+            if (Config.isHub()) {
+                sendHub(event.player, playerData.getLoginLink());
             } else {
-                Vars.netServer.admins.unAdminPlayer(target.id);
+                if (playerData.getLoginLink() != null) {
+                    player.sendMessage("[green]Logged in successfully");
+                } else {
+
+                }
             }
-            if (playert != null)
-                playert.admin = isAdmin;
-        } else {
-            Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
-        }
+
+            var uuid = playerData.getUuid();
+            var isAdmin = playerData.isAdmin();
+
+            addPlayer(playerData, player);
+
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
+            Player playert = Groups.player.find(p -> p.getInfo() == target);
+
+            if (target != null) {
+                if (isAdmin) {
+                    Vars.netServer.admins.adminPlayer(target.id, playert == null ? target.adminUsid : playert.usid());
+                } else {
+                    Vars.netServer.admins.unAdminPlayer(target.id);
+                }
+                if (playert != null)
+                    playert.admin = isAdmin;
+            } else {
+                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
+            }
+        });
     }
 
     public void addPlayer(SetPlayerMessageRequest playerData, Player player) {
@@ -331,7 +342,10 @@ public class EventHandler {
         var exp = playerData.getExp();
         var name = playerData.getName();
 
-        playerMeta.put(uuid, new PlayerMetaData().setExp(exp).setPlayer(player).setName(name));
+        playerMeta.put(uuid, new PlayerMetaData()//
+                .setExp(exp)//
+                .setPlayer(player)//
+                .setName(name));
 
         setName(player, name, (int) Math.sqrt(exp));
     }
@@ -431,7 +445,7 @@ public class EventHandler {
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()),
-                            "%s [cyan]Players: %s [green]Map: %s".formatted(//
+                            "%s \n[cyan]Players: %s \n[green]Map: %s\nMods: ".formatted(//
                                     server.getName(), //
                                     server.getPlayers(),
                                     server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//
