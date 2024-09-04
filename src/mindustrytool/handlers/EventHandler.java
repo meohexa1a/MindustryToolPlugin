@@ -91,7 +91,7 @@ public class EventHandler {
             lastMode = Gamemode.survival;
         }
 
-        executor.schedule(this::updatePlayerLevels, 0, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::updatePlayerLevels, 0, 1, TimeUnit.SECONDS);
 
         if (!Vars.mods.orderedMods().isEmpty()) {
             Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
