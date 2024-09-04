@@ -243,7 +243,7 @@ public class EventHandler {
             sendHub(event.player, playerData.getLoginLink());
         } else {
             if (playerData.getLoginLink() != null) {
-                player.sendMessage("[green]Login successfully");
+                player.sendMessage("[green]Logged in successfully");
             } else {
 
             }
