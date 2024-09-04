@@ -91,7 +91,7 @@ public class EventHandler {
             lastMode = Gamemode.survival;
         }
 
-        executor.scheduleAtFixedRate(this::updatePlayerLevels, 0, 1, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::updatePlayerLevels, 0, 1, TimeUnit.MINUTES);
 
         if (!Vars.mods.orderedMods().isEmpty()) {
             Log.info("@ mods loaded.", Vars.mods.orderedMods().size);
@@ -138,7 +138,7 @@ public class EventHandler {
 
             var newName = "[%s] %s".formatted(level, meta.name);
 
-            if (newName.equals(meta.player.name)) {
+            if (!newName.equals(meta.player.name)) {
                 var hasLevelInName = meta.player.name.matches("\\[\\d+\\]");
 
                 setName(meta.player, newName, level);
