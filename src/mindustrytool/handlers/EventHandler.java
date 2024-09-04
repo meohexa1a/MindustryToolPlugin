@@ -324,6 +324,8 @@ public class EventHandler {
         var name = playerData.getName();
 
         playerMeta.put(uuid, new PlayerMetaData().setExp(exp).setPlayer(player).setName(name));
+
+        setName(player, name, (int) Math.sqrt(exp));
     }
 
     public void onPlay(PlayEvent event) {
