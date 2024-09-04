@@ -523,9 +523,7 @@ public class EventHandler {
             }
         };
 
-        if (wait)
-
-        {
+        if (wait) {
             lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
         } else {
             reload.run();

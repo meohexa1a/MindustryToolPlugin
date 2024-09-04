@@ -65,8 +65,9 @@ public class APIHandler {
                 }
             }
 
-            Map result = Vars.maps.all().find(map -> map.plainName().replace('_', ' ')
-                    .equalsIgnoreCase(Strings.stripColors(mapName).replace('_', ' ')));
+            Map result = Vars.maps.all()//
+                    .find(map -> map.plainName().replace('_', ' ')
+                            .equalsIgnoreCase(Strings.stripColors(mapName).replace('_', ' ')));
 
             if (result == null) {
                 Log.err("No map with name '@' found.", mapName);
@@ -76,6 +77,9 @@ public class APIHandler {
             Log.info("Loading map...");
 
             Vars.logic.reset();
+            MindustryToolPlugin.eventHandler.lastMode = preset;
+            Core.settings.put("lastServerMode", MindustryToolPlugin.eventHandler.lastMode.name());
+
             try {
                 Vars.world.loadMap(result, result.applyRules(preset));
                 Vars.state.rules = result.applyRules(preset);
