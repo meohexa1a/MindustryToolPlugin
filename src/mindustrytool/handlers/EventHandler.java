@@ -135,7 +135,7 @@ public class EventHandler {
     private void updatePlayerLevels() {
         playerMeta.values().forEach(meta -> {
             if (meta.isLoggedIn == false)
-                return;
+            return;
 
             var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
             var level = (int) Math.sqrt(exp);
@@ -451,7 +451,7 @@ public class EventHandler {
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()),
-                            "%s \n[cyan]Players: %s \n[green]Map: %s\nMods: ".formatted(//
+                            "%s | [cyan]Players: %s | [green]Map: %s | Mods: ".formatted(//
                                     server.getName(), //
                                     server.getPlayers(),
                                     server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//

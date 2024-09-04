@@ -25,6 +25,6 @@ public class Config {
                     [yellow]/rtv[white] to vote for changing map
                     [yellow]/maps[white] to see map list
                     [yellow]/hub[white] show this
-                    [green]Logged in to get more feature
+                    [green]Log in to get more feature
             """;
 }
