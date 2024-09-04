@@ -136,20 +136,22 @@ public class EventHandler {
             var exp = meta.getExp() + Duration.between(meta.createdAt, Instant.now()).toMinutes();
             var level = (int) Math.sqrt(exp);
 
-            var newName = "[%s] %s".formatted(level, meta.name);
-
-            if (!newName.equals(meta.player.name)) {
-                var hasLevelInName = meta.player.name.matches("\\[\\d+\\]");
-
-                setName(meta.player, newName, level);
-
-                if (hasLevelInName)
-                    meta.player.sendMessage("You have leveled up to level %s".formatted(level));
-            }
+            setName(meta.player, meta.name, level);
         });
     }
 
     private void setName(Player player, String name, int level) {
+        var newName = "[%s] %s".formatted(level, name);
+
+        if (!newName.equals(player.name)) {
+            var hasLevelInName = player.name.matches("\\[\\d+\\]");
+
+            setName(player, newName, level);
+
+            if (hasLevelInName)
+                player.sendMessage("You have leveled up to level %s".formatted(level));
+        }
+
         player.name("[%s] %s".formatted(level, name));
     }
 
