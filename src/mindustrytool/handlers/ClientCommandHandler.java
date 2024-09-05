@@ -2,6 +2,7 @@ package mindustrytool.handlers;
 
 import arc.struct.Seq;
 import arc.util.CommandHandler;
+import mindustry.Vars;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
@@ -86,5 +87,24 @@ public class ClientCommandHandler {
         handler.<Player>register("hub", "", "Display available servers", (args, player) -> {
             MindustryToolPlugin.eventHandler.sendHub(player, null);
         });
+
+        handler.<Player>register("js", "<code...>", "Execute JavaScript code.", (args, player) -> {
+            if (player.admin) {
+                String output = Vars.mods.getScripts().runConsole(args[0]);
+                player.sendMessage("> " + (isError(output) ? "[#ff341c]" + output : output));
+            } else {
+                player.sendMessage("[scarlet]You must be admin to use this command.");
+            }
+        });
+    }
+
+    private boolean isError(String output) {
+        try {
+            String errorName = output.substring(0, output.indexOf(' ') - 1);
+            Class.forName("org.mozilla.javascript." + errorName);
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 }
