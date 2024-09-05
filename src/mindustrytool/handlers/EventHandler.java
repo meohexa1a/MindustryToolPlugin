@@ -453,10 +453,12 @@ public class EventHandler {
             var servers = response.getServers();
             var options = new ArrayList<>(servers.stream()//
                     .map(server -> HudUtils.option((p, state) -> onServerChoose(p, server.getId(), server.getName()),
-                            "%s   [white]|   [cyan]Players: %s   [white]|  [green]Map: %s   [white]|   Mods: ".formatted(//
-                                    server.getName(), //
-                                    server.getPlayers(),
-                                    server.getMapName() == null ? "[red]Not playing" : server.getMapName())))//
+                            "%s   [white]|   [yellow]Players: %s   [white]|  [cyan]Map: %s   [white]|   [red]Mods: "
+                                    .formatted(//
+                                            server.getName(), //
+                                            server.getPlayers(), //
+                                            server.getMapName() == null ? "[red]Not playing" : server.getMapName(), //
+                                            server.getMods())))//
                     .toList());
 
             if (page > 0) {
