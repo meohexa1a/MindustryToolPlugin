@@ -44,7 +44,7 @@ public class JsonUtils {
         try {
             var node = objectMapper.readTree(data);
 
-            if (!node.hasNonNull("id") || !node.hasNonNull("request") || !node.hasNonNull("method")) {
+            if (!node.hasNonNull("id") || !node.hasNonNull("type") || !node.hasNonNull("method")) {
                 throw new NotMessageException();
             }
 
