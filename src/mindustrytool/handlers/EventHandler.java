@@ -3,6 +3,7 @@ package mindustrytool.handlers;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import arc.Core;
 import arc.Events;
@@ -75,6 +76,14 @@ public class EventHandler {
     public static final ConcurrentHashMap<String, PlayerMetaData> playerMeta = new ConcurrentHashMap<>();
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
+    private final List<String> icons = List.of(//
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", ""//
+    );
+
     @Data
     @Accessors(chain = true)
     public static class PlayerMetaData {
@@ -145,7 +154,8 @@ public class EventHandler {
     }
 
     private void setName(Player player, String name, int level) {
-        var newName = "[%s] %s".formatted(level, name);
+        var icon = getIconBaseOnLevel(level);
+        var newName = "%s[%s] %s".formatted(icon, level, name);
 
         if (!newName.equals(player.name)) {
             var hasLevelInName = player.name.matches("\\[\\d+\\]");
@@ -157,6 +167,16 @@ public class EventHandler {
         }
 
         player.name("[%s] %s".formatted(level, name));
+    }
+
+    public String getIconBaseOnLevel(int level) {
+        var index = (int) (level / 3);
+
+        if (index > icons.size()) {
+            index = icons.size() - 1;
+        }
+
+        return icons.get(index);
     }
 
     private void onPlayerConnect(PlayerConnect event) {
@@ -341,23 +361,6 @@ public class EventHandler {
         });
     }
 
-    public void addPlayer(SetPlayerMessageRequest playerData, Player player) {
-        var uuid = playerData.getUuid();
-        var exp = playerData.getExp();
-        var name = playerData.getName();
-        var isLoggedIn = playerData.getLoginLink() == null;
-
-        playerMeta.put(uuid, new PlayerMetaData()//
-                .setExp(exp)//
-                .setPlayer(player)//
-                .setLoggedIn(isLoggedIn)//
-                .setName(name));
-
-        if (isLoggedIn) {
-            setName(player, name, (int) Math.sqrt(exp));
-        }
-    }
-
     public void onPlay(PlayEvent event) {
         try {
             JsonValue value = JsonIO.json.fromJson(null, Core.settings.getString("globalrules"));
@@ -529,6 +532,23 @@ public class EventHandler {
             lastTask = Timer.schedule(reload, mindustry.net.Administration.Config.roundExtraTime.num());
         } else {
             reload.run();
+        }
+    }
+
+    public void addPlayer(SetPlayerMessageRequest playerData, Player player) {
+        var uuid = playerData.getUuid();
+        var exp = playerData.getExp();
+        var name = playerData.getName();
+        var isLoggedIn = playerData.getLoginLink() == null;
+
+        playerMeta.put(uuid, new PlayerMetaData()//
+                .setExp(exp)//
+                .setPlayer(player)//
+                .setLoggedIn(isLoggedIn)//
+                .setName(name));
+
+        if (isLoggedIn) {
+            setName(player, name, (int) Math.sqrt(exp));
         }
     }
 
