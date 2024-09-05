@@ -31,4 +31,14 @@ public class ServerMessageEvent<T> {
 
         System.out.println(JsonUtils.toJsonString(message));
     }
+
+    public void error(Object data) {
+        var message = new ServerExchange()//
+                .error()//
+                .setMethod(method)//
+                .setData(data)//
+                .setId(id);
+
+        System.out.println(JsonUtils.toJsonString(message));
+    }
 }

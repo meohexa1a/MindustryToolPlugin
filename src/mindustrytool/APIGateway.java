@@ -48,6 +48,16 @@ public class APIGateway {
 
             JsonNode node = JsonUtils.readJson(responseString);
 
+            if (!node.has("type")) {
+                throw new IllegalStateException("No error field in response for id " + id);
+            }
+
+            var type = node.get("type").asText();
+
+            if (type.equals("error")) {
+                throw new RuntimeException(node.get("data").toString());
+            }
+
             return JsonUtils.readJsonAsClass(node.get("data").toString(), clazz);
 
         } catch (Exception e) {
@@ -75,9 +85,9 @@ public class APIGateway {
         executor.execute(() -> {
             try {
                 String id = node.get("id").asText();
-                Boolean isRequest = node.get("request").asBoolean();
+                String type = node.get("type").asText();
 
-                if (isRequest) {
+                if (type.equals("request")) {
                     String method = node.get("method").asText();
                     ServerMessageHandler<?> handler = handlers.get(method);
 
@@ -88,7 +98,11 @@ public class APIGateway {
                     Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
                     var event = new ServerMessageEvent(id, method, data);
 
-                    handler.apply(event);
+                    try {
+                        handler.apply(event);
+                    } catch (Exception e) {
+                        event.error(e.getMessage());
+                    }
                 } else {
 
                     var request = requests.get(id);

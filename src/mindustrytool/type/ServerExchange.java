@@ -3,25 +3,25 @@ package mindustrytool.type;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-@Data
 @Accessors(chain = true)
+@Data
 public class ServerExchange {
     private String id;
     private String method;
     private Object data;
-    private boolean request = true;
-
-    public ServerExchange request() {
-        request = true;
-        return this;
-    }
+    private String type = "request";
 
     public ServerExchange response() {
-        request = false;
+        type = "response";
         return this;
     }
 
-    public boolean isRequest() {
-        return request;
+    public ServerExchange request() {
+        return this;
+    }
+
+    public ServerExchange error() {
+        type = "error";
+        return this;
     }
 }
