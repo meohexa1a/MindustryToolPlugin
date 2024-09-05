@@ -77,7 +77,7 @@ public class EventHandler {
     private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     private final List<String> icons = List.of(//
-            "", "", "", "", "", "", "", "", "", "", //
+            "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
             "", "", "", "", "", "", "", "", "", "", //
@@ -155,24 +155,23 @@ public class EventHandler {
 
     private void setName(Player player, String name, int level) {
         var icon = getIconBaseOnLevel(level);
-        var newName = "%s[%s] %s".formatted(icon, level, name);
+        var newName = "[white]%s [%s] %s".formatted(icon, level, name);
 
         if (!newName.equals(player.name)) {
             var hasLevelInName = player.name.matches("\\[\\d+\\]");
 
             player.name(newName);
 
-            if (hasLevelInName)
+            if (hasLevelInName) {
                 player.sendMessage("You have leveled up to level %s".formatted(level));
+            }
         }
-
-        player.name("[%s] %s".formatted(level, name));
     }
 
     public String getIconBaseOnLevel(int level) {
         var index = (int) (level / 3);
 
-        if (index > icons.size()) {
+        if (index >= icons.size()) {
             index = icons.size() - 1;
         }
 
