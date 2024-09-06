@@ -44,6 +44,7 @@ import mindustrytool.messages.request.GetServersMessageRequest;
 import mindustrytool.messages.request.PlayerMessageRequest;
 import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
+import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.Utils;
 import mindustrytool.utils.VPNUtils;
@@ -318,10 +319,14 @@ public class EventHandler {
             String playerName = player != null ? player.plainName() : "Unknown";
             String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
+            var team = player.team();
             var request = new PlayerMessageRequest()//
                     .setName(player.coloredName())//
                     .setIp(player.ip())//
-                    .setUuid(player.uuid());
+                    .setUuid(player.uuid())//
+                    .setTeam(new Team()//
+                            .setName(team.name)//
+                            .setColor(team.color.toString()));
 
             MindustryToolPlugin.apiGateway.emit("CHAT_MESSAGE", chat);
 
