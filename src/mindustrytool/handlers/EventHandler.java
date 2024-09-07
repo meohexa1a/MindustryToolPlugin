@@ -445,7 +445,7 @@ public class EventHandler {
 
         var map = Vars.state.map;
         if (map != null) {
-            Call.label(Config.HUB_MESSAGE, 200000, map.width / 2, map.height / 2);
+            Call.label(Config.HUB_MESSAGE, 200000, 300, 300);
         }
     }
 
@@ -495,7 +495,8 @@ public class EventHandler {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
             var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
             player.sendMessage("[green]Redirecting");
-            Call.sendMessage("%s [green]redirecting to server [white]%s".formatted(player.coloredName(), name));
+            Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
+                    .formatted(player.coloredName(), name));
             Call.connect(player.con, Config.SERVER_IP, data);
         });
     }
