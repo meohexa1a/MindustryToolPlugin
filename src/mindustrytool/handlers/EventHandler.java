@@ -493,11 +493,16 @@ public class EventHandler {
         HudUtils.closeFollowDisplay(player, HudUtils.SERVERS_UI);
         Utils.executeExpectError(() -> {
             player.sendMessage("[green]Starting server [white]%s, [white]redirection will happen soon".formatted(name));
-            var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
-            player.sendMessage("[green]Redirecting");
-            Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
-                    .formatted(player.coloredName(), name));
-            Call.connect(player.con, Config.SERVER_IP, data);
+
+            try {
+                var data = MindustryToolPlugin.apiGateway.execute("START_SERVER", id, Integer.class);
+                player.sendMessage("[green]Redirecting");
+                Call.sendMessage("%s [green]redirecting to server [white]%s, use [green]/servers[white] to follow"
+                        .formatted(player.coloredName(), name));
+                Call.connect(player.con, Config.SERVER_IP, data);
+            } catch (Exception e) {
+                player.sendMessage("Error: Can not load server");
+            }
         });
     }
 
