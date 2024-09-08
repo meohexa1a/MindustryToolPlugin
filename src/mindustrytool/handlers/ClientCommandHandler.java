@@ -7,6 +7,9 @@ import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustrytool.MindustryToolPlugin;
+import mindustrytool.messages.request.PlayerMessageRequest;
+import mindustrytool.messages.request.SetPlayerMessageRequest;
+import mindustrytool.type.Team;
 
 public class ClientCommandHandler {
 
@@ -94,6 +97,27 @@ public class ClientCommandHandler {
                 player.sendMessage("> " + (isError(output) ? "[#ff341c]" + output : output));
             } else {
                 player.sendMessage("[scarlet]You must be admin to use this command.");
+            }
+        });
+
+        handler.<Player>register("login", "", "Login", (args, player) -> {
+            var team = player.team();
+            var request = new PlayerMessageRequest()//
+                    .setName(player.coloredName())//
+                    .setIp(player.ip())//
+                    .setUuid(player.uuid())//
+                    .setTeam(new Team()//
+                            .setName(team.name)//
+                            .setColor(team.color.toString()));
+
+            var playerData = MindustryToolPlugin.apiGateway.execute("PLAYER_JOIN", request,
+                    SetPlayerMessageRequest.class);
+
+            var loginLink = playerData.getLoginLink();
+            if (loginLink != null && !loginLink.isEmpty()) {
+                Call.openURI(player.con, loginLink);
+            } else {
+                player.sendMessage("Already logged in");
             }
         });
     }
