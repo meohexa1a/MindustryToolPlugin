@@ -2,7 +2,7 @@ package mindustrytool.utils;
 
 import mindustry.gen.Call;
 import mindustry.gen.Player;
-import mindustrytool.MindustryToolPlugin;
+import mindustrytool.Config;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -26,7 +26,7 @@ public class HudUtils {
     public static final int SERVERS_UI = 2;
     public static final int LOGIN_UI = 3;
 
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private static final List<Player> leaved = new ArrayList<Player>();
     private static final List<Player> markForRemove = new ArrayList<Player>();
 
@@ -110,7 +110,7 @@ public class HudUtils {
             return;
         }
 
-        executor.execute(() -> callbacks[event.option].accept(event.player, data.state));
+        Config.BACKGROUND_TASK_EXECUTOR.execute(() -> callbacks[event.option].accept(event.player, data.state));
     }
 
     public static void cleanUpCallback() {
