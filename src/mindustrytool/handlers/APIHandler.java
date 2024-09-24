@@ -141,7 +141,8 @@ public class APIHandler {
                 .setTotalRam(Runtime.getRuntime().maxMemory() / 1024 / 1024)//
                 .setPlayers(players)//
                 .setMapName(mapName)//
-                .setMods(mods);
+                .setMods(mods)//
+                .setHosted(Vars.state.isGame());
 
     }
 

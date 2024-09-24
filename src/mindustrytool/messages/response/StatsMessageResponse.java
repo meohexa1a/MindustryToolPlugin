@@ -14,4 +14,5 @@ public class StatsMessageResponse {
     public String mapName;
     public byte[] mapData;
     public List<String> mods;
+    public boolean isHosted;
 }
