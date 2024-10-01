@@ -7,8 +7,6 @@ import mindustry.entities.Effect;
 import mindustry.gen.Call;
 
 public class Effects {
-    private static Timer.Task rainbowLoop;
-    private static Timer.Task effectLoop;
     private static Seq<Effects> effects = new Seq<>();
 
     public final Effect effect;
@@ -97,16 +95,10 @@ public class Effects {
         } else
             saveSettings();
 
-        effectLoop = new Timer.Task() {
-            @Override
-            public void run() {
-                Session.each(d -> d.hasEffect, d -> Call.effectReliable(d.effect.effect, d.player.x, d.player.y, 10,
-                        arc.graphics.Color.green));
-            }
-        };
-
-        Timer.schedule(rainbowLoop, 0, 0.064f);
-        Timer.schedule(effectLoop, 0, 0.064f);
+        Timer.schedule(() -> {
+            Session.each(d -> d.hasEffect,
+                    d -> Call.effect(d.effect.effect, d.player.x, d.player.y, 10, arc.graphics.Color.green));
+        }, 0, 0.064f);
     }
 
     public static void saveSettings() {
