@@ -17,15 +17,16 @@ import mindustrytool.handlers.APIHandler;
 import mindustrytool.handlers.ClientCommandHandler;
 import mindustrytool.handlers.EventHandler;
 import mindustrytool.handlers.ServerCommandHandler;
-import mindustrytool.handlers.VoteHandler;
+import mindustrytool.handlers.RtvVoteHandler;
 import mindustrytool.messages.NotMessageException;
+import mindustrytool.utils.Effects;
 import mindustrytool.utils.HudUtils;
 import mindustrytool.utils.VPNUtils;
 
 public class MindustryToolPlugin extends Plugin {
 
     public static final APIGateway apiGateway = new APIGateway();
-    public static final VoteHandler voteHandler = new VoteHandler();
+    public static final RtvVoteHandler voteHandler = new RtvVoteHandler();
     public static final APIHandler apiHandler = new APIHandler();
     public static final EventHandler eventHandler = new EventHandler();
     public static final CommandHandler handler = new CommandHandler("");
@@ -85,6 +86,8 @@ public class MindustryToolPlugin extends Plugin {
 
         HudUtils.init();
         VPNUtils.init();
+        Effects.init();
+
         Vars.mods.eachClass(p -> p.registerServerCommands(handler));
 
         if (Version.build == -1) {

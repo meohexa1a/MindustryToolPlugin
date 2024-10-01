@@ -46,6 +46,7 @@ import mindustrytool.messages.request.SetPlayerMessageRequest;
 import mindustrytool.messages.response.GetServersMessageResponse;
 import mindustrytool.type.Team;
 import mindustrytool.utils.HudUtils;
+import mindustrytool.utils.Session;
 import mindustrytool.utils.Utils;
 import mindustrytool.utils.VPNUtils;
 import mindustrytool.utils.HudUtils.Option;
@@ -287,11 +288,17 @@ public class EventHandler {
 
     public void onPlayerLeave(PlayerLeave event) {
         executor.execute(() -> {
-            if (!Vars.state.isPaused() && Groups.player.size() == 1) {
-                Vars.state.set(State.paused);
-            }
+
+            Timer.schedule(() -> {
+                if (!Vars.state.isPaused() && Groups.player.size() == 0) {
+                    Vars.state.set(State.paused);
+                }
+            }, 10);
 
             Player player = event.player;
+
+            Session.remove(player);
+
             MindustryToolPlugin.voteHandler.removeVote(player);
 
             String playerName = event.player != null ? event.player.plainName() : "Unknown";
@@ -316,6 +323,9 @@ public class EventHandler {
             }
 
             var player = event.player;
+
+            Session.put(player);
+
             String playerName = player != null ? player.plainName() : "Unknown";
             String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 

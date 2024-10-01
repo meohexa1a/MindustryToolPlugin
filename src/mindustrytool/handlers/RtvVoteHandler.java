@@ -12,7 +12,7 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 
-public class VoteHandler {
+public class RtvVoteHandler {
     public HashMap<Integer, Seq<String>> votes = new HashMap<>();
     public double ratio = 0.6;
 
