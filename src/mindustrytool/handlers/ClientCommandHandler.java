@@ -173,7 +173,7 @@ public class ClientCommandHandler {
                     @Override
                     public void run() {
                         Call.sendMessage("[scarlet]Vote for "
-                                + (waveVoted == 1 ? "sending a new wave" : "skiping [scarlet]" + waveVoted + "[] waves")
+                                + (waveVoted == 1 ? "sending a new wave" : "skipping [scarlet]" + waveVoted + "[] waves")
                                 + " failed! []Not enough votes.");
                         waveVoted = 0;
                         cancel();
@@ -184,7 +184,7 @@ public class ClientCommandHandler {
                         Session.each(p -> p.votedVNW = false);
                         super.cancel();
                     }
-                }, 30);
+                }, 60);
 
             if (cur < req)
                 return;
