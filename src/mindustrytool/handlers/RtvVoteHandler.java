@@ -51,7 +51,7 @@ public class RtvVoteHandler {
     }
 
     public int getRequire() {
-        return (int) Math.ceil(ratio * Groups.player.size());
+        return (int) Math.min(Math.floor(ratio * Groups.player.size()) + 1, Groups.player.size());
     }
 
     public int getVoteCount(int mapId) {
