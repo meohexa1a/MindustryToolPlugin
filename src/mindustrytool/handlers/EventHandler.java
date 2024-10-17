@@ -326,6 +326,12 @@ public class EventHandler {
 
             Session.put(player);
 
+            PlayerInfo target = Vars.netServer.admins.getInfoOptional(player.uuid());
+
+            if (target != null) {
+                Vars.netServer.admins.unAdminPlayer(target.id);
+            }
+
             String playerName = player != null ? player.plainName() : "Unknown";
             String chat = Strings.format("@ joined the server, current players: @", playerName, Groups.player.size());
 
@@ -353,12 +359,10 @@ public class EventHandler {
                 }
             }
 
-            var uuid = playerData.getUuid();
             var isAdmin = playerData.isAdmin();
 
             addPlayer(playerData, player);
 
-            PlayerInfo target = Vars.netServer.admins.getInfoOptional(uuid);
             Player playert = Groups.player.find(p -> p.getInfo() == target);
 
             if (target != null) {
@@ -369,8 +373,6 @@ public class EventHandler {
                 }
                 if (playert != null)
                     playert.admin = isAdmin;
-            } else {
-                Log.err("Nobody with that name or ID could be found. If adding an admin by name, make sure they're online; otherwise, use their UUID.");
             }
         });
     }
