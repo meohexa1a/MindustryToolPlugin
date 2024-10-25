@@ -1,11 +1,11 @@
 package mindustrytool.handlers;
 
+import java.io.IOException;
 import java.util.List;
 
 import arc.Core;
 import arc.files.Fi;
 import arc.util.Log;
-import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.game.Gamemode;
 import mindustry.gen.Call;
@@ -65,10 +65,12 @@ public class APIHandler {
                 }
             }
 
-            Map result = Vars.maps.all()//
-                    .find(map -> map.plainName().replace('_', ' ')
-                            .equalsIgnoreCase(Strings.stripColors(mapName).replace('_', ' ')));
-
+            Map result;
+            try {
+                result = MapIO.createMap(Vars.customMapDirectory.child(mapName), true);
+            } catch (IOException e) {
+                throw new RuntimeException("Can not read map file: " + mapName);
+            }
             if (result == null) {
                 Log.err("No map with name '@' found.", mapName);
                 return;
