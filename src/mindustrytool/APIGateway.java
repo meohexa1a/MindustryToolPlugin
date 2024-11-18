@@ -49,7 +49,7 @@ public class APIGateway {
             JsonNode node = JsonUtils.readJson(responseString);
 
             if (!node.has("type")) {
-                throw new IllegalStateException("No error field in response for id " + id);
+                throw new RuntimeException("No error field in response for id " + id);
             }
 
             var type = node.get("type").asText();
@@ -92,7 +92,7 @@ public class APIGateway {
                     ServerMessageHandler<?> handler = handlers.get(method);
 
                     if (handler == null) {
-                        throw new IllegalStateException("No handler for method " + method);
+                        throw new RuntimeException("No handler for method " + method);
                     }
 
                     Object data = JsonUtils.readJsonAsClass(node.get("data").toString(), handler.getClazz());
@@ -110,7 +110,7 @@ public class APIGateway {
                     if (request != null) {
                         request.complete(input);
                     } else {
-                        throw new IllegalStateException("No request found for id " + id);
+                        throw new RuntimeException("No request found for id " + id);
                     }
                 }
             } catch (Exception e) {
@@ -123,7 +123,7 @@ public class APIGateway {
         var handler = new ServerMessageHandler<>(method, clazz, event);
 
         if (handlers.containsKey(method)) {
-            throw new IllegalStateException("Handler for method " + method + " already exists");
+            throw new RuntimeException("Handler for method " + method + " already exists");
         }
 
         handlers.put(method, handler);
