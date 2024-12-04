@@ -15,7 +15,7 @@ public class Config {
 
     public static final String SERVER_IP = "103.20.96.24";
     public static final String DISCORD_INVITE_URL = "https://discord.com/invite/DCX5yrRUyp";
-    public static final String MINDUSTRY_TOOL_URL = "https://mindustry-tool.app";
+    public static final String MINDUSTRY_TOOL_URL = "https://mindustry-tool.com";
     public static final String RULE_URL = MINDUSTRY_TOOL_URL + "/rules";
 
     public static final int MAX_IDENTICAL_IPS = 3;
