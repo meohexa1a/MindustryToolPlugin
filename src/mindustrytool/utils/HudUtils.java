@@ -72,8 +72,7 @@ public class HudUtils {
         return new Option(callback, text);
     }
 
-    public static void showFollowDisplay(Player player, int id, String title, String description, Object state,
-            List<Option> options) {
+    public static void showFollowDisplay(Player player, int id, String title, String description, Object state, List<Option> options) {
 
         var optionTexts = options.stream()//
                 .map(option -> option.text)//
@@ -93,7 +92,6 @@ public class HudUtils {
         var menu = menus.get(event.menuId);
 
         if (menu == null) {
-            Log.info("Menu not found: " + event.menuId);
             return;
         }
 
