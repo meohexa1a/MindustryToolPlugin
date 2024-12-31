@@ -20,11 +20,11 @@ public class Config {
 
     public static final int MAX_IDENTICAL_IPS = 3;
     public static final String HUB_MESSAGE = """
-                    Command
-                    [yellow]/servers[white] to show server list
-                    [yellow]/rtv[white] to vote for changing map
-                    [yellow]/maps[white] to see map list
-                    [yellow]/hub[white] show this
-                    [green]Log in to get more feature
+            Command
+            [yellow]/servers[white] to show server list
+            [yellow]/rtv[white] to vote for changing map
+            [yellow]/maps[white] to see map list
+            [yellow]/hub[white] show this
+            [green]Log in to get more feature
             """;
 }
